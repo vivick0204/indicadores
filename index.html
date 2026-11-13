@@ -1,0 +1,597 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Painel de Orçamentos – Medsystem Calibração</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{--bg:#f3f5f6;--card:#ffffff;--fg:#17232b;--mut:#5c6b75;--line:#d6dde1;--accent:#0b6e7d;--ok:#1f8a5b;--rec:#5aa7b8;--dup:#9aa7b0;--vc:#b9892b;--lost:#c2452f;--canc:#8a5a52;--open:#d9a441;--open2:#e9cf96;--chip:#e6ecef;
+--sans:"IBM Plex Sans",system-ui,sans-serif;--cond:"IBM Plex Sans Condensed","IBM Plex Sans",system-ui,sans-serif;--mono:"IBM Plex Mono",ui-monospace,monospace}
+@media (prefers-color-scheme:dark){:root{--bg:#11181c;--card:#1a2328;--fg:#e6edf0;--mut:#9aa9b2;--line:#2f3b42;--accent:#4fb6c6;--ok:#46b783;--rec:#6fbccb;--dup:#6f7c85;--vc:#d1a54a;--lost:#e2674f;--canc:#b07f76;--open:#e0b25a;--open2:#8a744a;--chip:#26323a;color-scheme:dark}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:14px;line-height:1.5}
+.wrap{max-width:1180px;margin:0 auto;padding:24px 16px 60px;display:flex;flex-direction:column;gap:28px}
+h1{font-family:var(--cond);font-weight:600;font-size:28px;margin:0;line-height:1.15}
+h2{font-family:var(--cond);font-weight:600;font-size:20px;margin:0 0 4px}
+.sub{color:var(--mut);margin:0;max-width:75ch}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut)}
+.num{font-variant-numeric:tabular-nums;font-family:var(--mono)}
+.top{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;justify-content:space-between}
+.sync{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:12.5px;color:var(--mut)}
+.led{width:9px;height:9px;border-radius:50%;background:var(--dup);display:inline-block}
+.led.ok{background:var(--ok)}.led.err{background:var(--lost)}.led.busy{background:var(--open)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1px;background:var(--line);border:1px solid var(--line)}
+.kpi{background:var(--card);padding:14px 16px;display:flex;flex-direction:column;gap:2px}
+.kpi b{font-family:var(--cond);font-size:26px;font-weight:600;font-variant-numeric:tabular-nums}
+.kpi span{color:var(--mut);font-size:12.5px}
+.kpi i{font-style:normal;width:10px;height:10px;display:inline-block;margin-right:6px}
+section{display:flex;flex-direction:column;gap:12px}
+.band{display:flex;height:38px;border:1px solid var(--line);background:var(--card)}
+.band div{min-width:2px}
+.legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:6px 20px}
+.legend div{display:flex;gap:8px;align-items:baseline;border-bottom:1px solid var(--line);padding:4px 0}
+.legend i{width:10px;height:10px;flex:none;align-self:center}
+.legend span{flex:1;min-width:0}
+.legend em{font-style:normal;color:var(--mut);font-size:12px}
+.find{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.find article{background:var(--card);border:1px solid var(--line);padding:14px 16px}
+.find h3{margin:0 0 6px;font-size:14.5px;font-weight:600}
+.find p{margin:0;color:var(--mut)}
+.find p b{color:var(--fg);font-weight:600}
+.cuts{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:22px 28px}
+.cut{min-width:0}
+.cut h3{font-size:13px;margin:0 0 6px;font-weight:600}
+.row{display:grid;grid-template-columns:minmax(90px,150px) 1fr 44px;gap:8px;align-items:center;padding:3px 0;font-size:12.5px}
+.row .lab{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .lab small{color:var(--mut)}
+.bar{height:14px;background:var(--chip)}
+.bar div{height:100%;background:var(--accent)}
+.tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+input,select,textarea{font:inherit;padding:7px 10px;border:1px solid var(--line);background:var(--card);color:var(--fg);min-width:0}
+input[type=search]{flex:1 1 240px;max-width:360px}
+button{font:inherit;font-size:12.5px;border:1px solid var(--line);background:var(--card);color:var(--fg);padding:5px 10px;cursor:pointer}
+button.pri,button[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:var(--bg)}
+button:disabled{opacity:.5;cursor:default}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,tr:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.tw{overflow-x:auto;border:1px solid var(--line);background:var(--card)}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{padding:6px 9px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-weight:600;background:var(--chip);user-select:none}
+#tc>thead th{cursor:pointer}
+th:first-child,td:first-child{text-align:left}
+#tc>tbody>tr>td:first-child,#tg td:first-child{white-space:normal;min-width:230px}
+td.l,th.l{text-align:left}
+tr.c{cursor:pointer}
+tr.c:hover td{background:var(--chip)}
+tr.d>td{background:var(--bg);padding:0;white-space:normal}
+tr.d table{font-size:12px}
+tr.d td td{background:transparent}
+tr.e td{background:var(--card)!important}
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;padding:10px 4px;text-align:left;white-space:normal}
+.form label{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--mut)}
+.form .wide{grid-column:1/-1}
+.form .acts{grid-column:1/-1;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.dot{display:inline-block;width:8px;height:8px;margin-right:5px}
+.muted{color:var(--mut)}
+.msg{font-size:12.5px}.msg.err{color:var(--lost)}.msg.ok{color:var(--ok)}
+.panel{background:var(--card);border:1px solid var(--line);padding:18px;display:flex;flex-direction:column;gap:12px;max-width:640px}
+.panel label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--mut)}
+small.n{color:var(--mut);font-size:12px}
+details summary{cursor:pointer;font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div style="display:flex;flex-direction:column;gap:4px">
+    <div class="eyebrow">Medsystem · Calibração</div>
+    <h1>Painel de orçamentos</h1>
+    <p class="sub" id="fonte">Orçamentos solicitados, aprovados e perdidos por cliente, lidos direto da planilha.</p>
+  </div>
+  <div class="sync"><span class="led" id="led"></span><span id="sync">Sem conexão configurada</span>
+    <button id="bAtualizar">Atualizar agora</button><button id="bConfig">Conexão</button></div>
+</header>
+
+<div class="panel" id="config" hidden>
+  <h2>Conexão com a planilha</h2>
+  <p class="sub">Essas informações ficam guardadas só neste navegador. A chave de leitura mostra os dados; a chave de edição também permite alterar a planilha por aqui.</p>
+  <label>Endereço do App da Web (termina em /exec)<input id="cUrl" type="url" placeholder="https://script.google.com/macros/s/.../exec" autocomplete="off"></label>
+  <label>Chave de acesso<input id="cChave" type="password" autocomplete="off"></label>
+  <label>Seu nome (aparece no registro de alterações da planilha)<input id="cQuem" type="text" maxlength="80"></label>
+  <div class="tools"><button class="pri" id="cSalvar">Salvar e carregar</button><button id="cFechar">Fechar</button><button id="cLimpar">Esquecer neste navegador</button></div>
+  <div class="msg" id="cMsg"></div>
+</div>
+
+<div id="app" hidden>
+<div class="wrap" style="padding:0">
+<div class="kpis" id="kpis"></div>
+
+<section>
+<div><h2>Para onde foi cada real orçado</h2><p class="sub">Situação apurada depois do rastreio, em valor orçado. Parte do que a planilha mostra como não aprovado saiu em outra OS, entrou em contrato ou é o mesmo orçamento enviado de novo.</p></div>
+<div class="band" id="band" role="img" aria-label="Distribuição do valor orçado por situação apurada"></div>
+<div class="legend" id="legend"></div>
+</section>
+
+<section><h2>O que os números mostram</h2><div class="find" id="find"></div></section>
+
+<section>
+<div><h2>Onde a conversão cai</h2><p class="sub">Conversão = aprovados ÷ (aprovados + não aprovados + cancelados). Orçamentos aguardando ficam fora da conta. O número ao lado do nome é a quantidade de orçamentos.</p></div>
+<div class="cuts" id="cuts"></div>
+</section>
+
+<section>
+<div><h2>Clientes</h2><p class="sub">Cada CNPJ é um cliente. Clique numa linha para ver os orçamentos e o rastreio de cada um. Clique no cabeçalho para ordenar. <span id="dicaEdicao"></span></p></div>
+<div class="tools"><input type="search" id="q" placeholder="Buscar cliente, CNPJ ou nº da OS" aria-label="Buscar cliente, CNPJ ou número da OS"></div>
+<div class="tools" id="chips"></div>
+<small class="n" id="count"></small>
+<div class="tw"><table id="tc"><thead></thead><tbody></tbody></table></div>
+<button id="more" hidden style="align-self:flex-start">Mostrar mais 50</button>
+</section>
+
+<section>
+<div><h2>Grupos com várias unidades</h2><p class="sub">Soma dos CNPJs com a mesma raiz. Útil para redes em que uma unidade fecha e outra não.</p></div>
+<div class="tw"><table id="tg"><thead></thead><tbody></tbody></table></div>
+</section>
+
+<section>
+<h2>Conferências</h2>
+<details><summary id="sDif"></summary><div class="tw" style="margin-top:8px"><table id="tdif"><thead></thead><tbody></tbody></table></div></details>
+<details><summary id="sInc"></summary><div class="tw" style="margin-top:8px"><table id="tinc"><thead></thead><tbody></tbody></table></div></details>
+</section>
+
+<section>
+<h2>Critérios do rastreio</h2>
+<p class="sub" id="criterios"></p>
+</section>
+</div>
+</div>
+</div>
+
+<script>
+/* =====================================================================
+   CONFIGURAÇÃO – é o único bloco que normalmente precisa ser alterado
+   ===================================================================== */
+const CFG = {
+  // Endereço do App da Web do Apps Script (termina em /exec). Pode ficar vazio:
+  // nesse caso a página pede o endereço na primeira abertura e guarda no navegador.
+  API_URL: '',
+  ANO: 2026,                 // ano da aba de orçamentos (usado para corrigir datas digitadas sem ano)
+  ATUALIZAR_A_CADA_MIN: 5,   // de quantos em quantos minutos a página relê a planilha sozinha
+  DIAS_FRIO: 60,             // "aguardando" há mais que isso é tratado como orçamento frio
+  TOL_IGUAL_REAIS: 1,        // valor igual: diferença de até R$ 1,00 ...
+  TOL_IGUAL_PCT: 0.002,      // ... ou até 0,2%
+  TOL_SEMELHANTE: 0.15,      // valor semelhante: diferença de até 15%
+  MIN_SEMELHANTE: 300,       // só procura valor semelhante em orçamentos a partir de R$ 300
+  MIN_GRUPO: 1000,           // só casa com outra unidade do grupo a partir de R$ 1.000
+  // Clientes com contrato: início do CNPJ (raiz de 8 dígitos ou CNPJ completo) -> nome do contrato.
+  // Quem tem linha com status "Contrato" na aba Aprovados entra sozinho, sem precisar estar aqui.
+  CONTRATOS_CNPJ: {
+    '46020301': 'CAMPINAS HOSPITAL CELSO PIERRO',
+    '60992427002270': 'HOSPITAL REGIONAL DE ITAPETININGA - HRI',
+    '50644053': 'INCOR',
+    '49914773': 'ITAPIRA INSTITUTO BAIRRAL',
+    '61687356': 'SECONCI SP (finalizado 08/2026)',
+    '03541994': 'STERILEX',
+    '50480953': 'UNIMED LIMEIRA',
+    '60214517': 'UNIMED SÃO JOSÉ DOS CAMPOS',
+    '58983784': 'CENTRO MÉDICO',
+    '46596151': 'OLÍMPIA',
+    '60990751001791': 'SANTA LUCINDA',
+    '01630921': 'HOSPITAL SAGRADA FAMILIA',
+    '53221255005290': 'AME ATIBAIA'
+  }
+};
+
+/* =====================================================================
+   CÁLCULO – recebe o que a planilha devolveu e monta toda a análise.
+   Nada aqui é fixo: tudo é recalculado a cada leitura da planilha.
+   ===================================================================== */
+function analisar(P, hoje, CFG) {
+  /* ---------- leitura de células ---------- */
+  const money = s => {
+    s = String(s == null ? '' : s).replace('R$', '').replace(/ /g, '').trim();
+    if (!s || s === '-') return null;
+    const v = Number(s.replace(/\./g, '').replace(',', '.'));
+    return isFinite(v) ? v : null;
+  };
+  const cnpjDe = s => { const m = /CPF\/CNPJ:\s*([\d.\-\/]+)/.exec(s || ''); return m ? m[1].replace(/\D/g, '') : ''; };
+  const nomeDe = s => String(s || '').split(/\s*-?\s*CPF\/CNPJ/)[0].replace(/ /g, ' ').replace(/\s+/g, ' ').replace(/^[\s-]+|[\s-]+$/g, '');
+  const norm = s => s.toUpperCase().normalize('NFKD').replace(/[^\x00-\x7F]/g, '').replace(/[^A-Z0-9]+/g, ' ').trim();
+  // Datas: aceita dd/mm/aaaa, dd/mm e erros comuns de digitação do ano (0226, 0206...)
+  const data = s => {
+    const m = /^(\d{1,2})\/(\d{1,2})\/?(\d{4})?$/.exec(String(s || '').trim());
+    if (!m) return null;
+    let y = m[3] ? Number(m[3]) : CFG.ANO;
+    if (y < CFG.ANO - 2 || y > CFG.ANO + 1) y = CFG.ANO;
+    const d = Number(m[1]), mo = Number(m[2]), t = Date.UTC(y, mo - 1, d), dt = new Date(t);
+    return (dt.getUTCMonth() === mo - 1 && dt.getUTCDate() === d) ? t : null;
+  };
+  const col = (aba, titulo) => { const t = titulo.trim().toLowerCase(); const i = aba.cab.findIndex(h => String(h).trim().toLowerCase() === t); return i < 0 ? -1 : i + 1; };
+  const cel = (r, i) => (i < 0 || r[i] == null) ? '' : String(r[i]);
+  const tokensOS = s => String(s || '').match(/\d{4,6}/g) || [];
+  const rel = (a, b) => Math.abs(a - b) / Math.max(a, b);
+  const brl = v => 'R$ ' + v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const fmtD = t => t == null ? '' : new Date(t).toISOString().slice(0, 10).split('-').reverse().join('/');
+  const DIA = 86400000;
+
+  /* ---------- aba de orçamentos ---------- */
+  const o = P.orc, oc = {};
+  ['Data Solicitação', 'OS ANTIGA', 'Data Criação', 'OS', 'Cliente', 'Filial', 'Valor', 'Serviço', 'Responsável', 'Data Aprovação', 'Status', 'ENVIO', 'OBSERVAÇÕES FOLLOW UP'].forEach(k => oc[k] = col(o, k));
+  const faltam = ['OS', 'Cliente', 'Valor', 'Status'].filter(k => oc[k] < 0);
+  if (faltam.length) throw new Error('Colunas não encontradas na aba de orçamentos: ' + faltam.join(', '));
+  const Q = [];
+  for (const r of o.linhas) {
+    const cli = cel(r, oc['Cliente']), os = cel(r, oc['OS']).trim();
+    if (!cli.trim() && !os) continue;
+    const dc = data(cel(r, oc['Data Criação'])), ds = data(cel(r, oc['Data Solicitação']));
+    const obs = cel(r, oc['OBSERVAÇÕES FOLLOW UP']).trim(), c0 = cel(r, oc['Data Solicitação']).trim();
+    const aviso = obs.toUpperCase().includes('AVISO DE VENCIMENTO') || c0 === 'ENVIADO' || c0 === 'P ENVIAR';
+    Q.push({ linha: r[0], dataCriacao: dc != null ? dc : ds, os, osAntiga: cel(r, oc['OS ANTIGA']).trim(), cliente: nomeDe(cli), cnpj: cnpjDe(cli),
+      filial: cel(r, oc['Filial']).trim(), valor: money(cel(r, oc['Valor'])) || 0, servico: cel(r, oc['Serviço']).trim(), resp: cel(r, oc['Responsável']).trim(),
+      dataAprov: data(cel(r, oc['Data Aprovação'])), status: cel(r, oc['Status']).trim().toUpperCase(), envio: cel(r, oc['ENVIO']).trim(), obs, aviso,
+      origem: aviso ? 'Aviso de vencimento' : 'Solicitado pelo cliente' });
+  }
+
+  /* ---------- aba de aprovados ---------- */
+  const a = P.apr, ac = {};
+  ['NF', 'OS', 'Data Aprovação', 'Status', 'Pedido', 'Cliente', 'Valor', 'Filial', 'Observação'].forEach(k => ac[k] = col(a, k));
+  const A = [];
+  for (const r of a.linhas) {
+    const cli = cel(r, ac['Cliente']), os = cel(r, ac['OS']).trim();
+    if (!cli.trim() && !os) continue;
+    A.push({ linha: r[0], os, dataAprov: data(cel(r, ac['Data Aprovação'])), status: cel(r, ac['Status']).trim(), cliente: nomeDe(cli), cnpj: cnpjDe(cli), valor: money(cel(r, ac['Valor'])) });
+  }
+
+  /* ---------- quem é o cliente: CNPJ completo; sem CNPJ, o nome ---------- */
+  const n2c = {};
+  for (const x of [...Q, ...A]) if (x.cnpj) { const k = norm(x.cliente); (n2c[k] = n2c[k] || new Set()).add(x.cnpj); }
+  const chave = (nm, c) => { if (c) return c; const k = norm(nm); return (n2c[k] && n2c[k].size === 1) ? [...n2c[k]][0] : 'N:' + k; };
+  const os2ck = {};
+  for (const q of Q) { q.ck = chave(q.cliente, q.cnpj); q.raiz = q.ck.startsWith('N:') ? q.ck : q.ck.slice(0, 8); os2ck[q.os] = q.ck; }
+  for (const x of A) { const t = [x.os, ...tokensOS(x.os)].find(t => t in os2ck); x.ck = t !== undefined ? os2ck[t] : chave(x.cliente, x.cnpj); x.naRelacao = t !== undefined; }
+  const maisFrequente = arr => { const c = new Map(); let best = null, n = 0; for (const v of arr) { const k = (c.get(v) || 0) + 1; c.set(v, k); if (k > n) { n = k; best = v; } } return best; };
+  const porCk = new Map(); for (const q of Q) { if (!porCk.has(q.ck)) porCk.set(q.ck, []); porCk.get(q.ck).push(q); }
+  const nomeCk = {}; for (const [k, v] of porCk) nomeCk[k] = maisFrequente(v.map(q => q.cliente));
+  for (const q of Q) q.nome = nomeCk[q.ck];
+
+  /* ---------- contratos ---------- */
+  const cc = P.contratos || { cab: [], linhas: [] }, ccCli = col(cc, 'Cliente'), ccVal = col(cc, 'Valor');
+  const CONTR = cc.linhas.map(r => ({ nome: cel(r, ccCli).trim(), valor: money(cel(r, ccVal)) })).filter(c => c.nome);
+  const contratoPorValor = v => { const c = CONTR.find(c => c.valor && Math.abs(v - c.valor) <= 1); return c ? c.nome : ''; };
+  const prefixos = Object.entries(CFG.CONTRATOS_CNPJ || {});
+  const raizesStatusContrato = new Set(A.filter(x => /^contrato/i.test(x.status) && !x.ck.startsWith('N:')).map(x => x.ck.slice(0, 8)));
+  const contratoDoCliente = ck => { const p = prefixos.find(([pre]) => ck.startsWith(pre)); if (p) return p[1]; return raizesStatusContrato.has(ck.slice(0, 8)) ? 'status "Contrato" na aba Aprovados' : ''; };
+  for (const q of Q) q.contrato = contratoDoCliente(q.ck);
+
+  /* ---------- valor fechado: o que está na aba Aprovados para a mesma OS ---------- */
+  const Ag = {};
+  for (const x of A) for (const t of (x.os in os2ck ? [x.os] : tokensOS(x.os))) (Ag[t] = Ag[t] || []).push(x);
+  for (const q of Q) {
+    const toks = q.os in Ag ? [q.os] : tokensOS(q.os).filter(t => t in Ag);
+    const rows = toks.flatMap(t => Ag[t]);
+    q.naAprovados = rows.length > 0; q.valorFechado = null; q.statusAprovados = '';
+    if (!rows.length) continue;
+    q.statusAprovados = [...new Set(rows.map(x => x.status))].sort().join(', ');
+    const vals = rows.filter(x => x.status !== 'Cancelado' && x.valor != null).map(x => x.valor);
+    if (!vals.length) { q.valorFechado = 0; continue; }
+    let s = vals.reduce((p, c) => p + c, 0);
+    if (vals.length > 1 && s > q.valor * 1.2) s = vals.reduce((b, v) => Math.abs(v - q.valor) < Math.abs(b - q.valor) ? v : b);
+    q.valorFechado = s;
+  }
+
+  /* ---------- base de OS aprovadas para o rastreio ---------- */
+  const ap = Q.filter(q => q.status === 'APROVADO').map(q => ({ os: q.os, ck: q.ck, raiz: q.raiz, valor: q.valor, valorFechado: q.valorFechado, dataAprov: q.dataAprov }));
+  for (const x of A) if (!x.naRelacao && x.status !== 'Cancelado' && x.valor != null) ap.push({ os: x.os || 's/ OS', ck: x.ck, raiz: x.ck.slice(0, 8), valor: x.valor, valorFechado: x.valor, dataAprov: x.dataAprov });
+  const apCk = {}, apRaiz = {};
+  for (const c of ap) { (apCk[c.ck] = apCk[c.ck] || []).push(c); (apRaiz[c.raiz] = apRaiz[c.raiz] || []).push(c); }
+
+  /* ---------- rastreio de cada orçamento ---------- */
+  const DUP_OBS = ['JÁ FOI ENVIADO', 'JA ENVIADO', 'JÁ ENVIADO', 'JÁ HAVIA SIDO ENVIADO', 'FOI ENVIADO 9'];
+  const cands = [];
+  const set = (q, rastreio, osRel, detalhe, conf) => { q.rastreio = rastreio; q.osRelacionada = osRel; q.detalhe = detalhe; q.confianca = conf; };
+  for (const q of Q) {
+    set(q, '', '', '', '');
+    if (q.status === 'APROVADO') {
+      if (q.statusAprovados.includes('Cancelado') && q.valorFechado === 0) q.rastreio = 'Aprovado e depois cancelado';
+      else if (!q.naAprovados) q.rastreio = 'Aprovado (sem registro na aba Aprovados)';
+      else if (q.valorFechado != null && q.valorFechado < q.valor - 0.01) q.rastreio = 'Aprovado com valor menor que o orçado';
+      else if (q.valorFechado != null && q.valorFechado > q.valor + 0.01) q.rastreio = 'Aprovado com valor maior que o orçado';
+      else q.rastreio = 'Aprovado';
+      continue;
+    }
+    const obs = q.obs.toUpperCase(), cv = contratoPorValor(q.valor);
+    if (obs.includes('REALIZAMOS O ATENDIMENTO') || obs.includes('ATENDIMENTO JÁ REALIZADO')) { set(q, 'Executado em outra OS (observação da planilha)', '', q.obs, 'Alta'); continue; }
+    if (obs.includes('OUTRA OS')) { set(q, 'Substituído por outra OS (observação da planilha)', '', q.obs, 'Alta'); continue; }
+    if (cv) { set(q, 'Integrou contrato (valor igual ao contrato)', '', 'Valor idêntico ao contrato ' + cv + ' na aba Contratos', 'Alta'); continue; }
+    // (a) outra OS aprovada do mesmo CNPJ com valor igual
+    let best = null;
+    for (const c of (apCk[q.ck] || [])) {
+      if (c.os === q.os) continue;
+      const dv = Math.min(Math.abs(q.valor - c.valor), (c.valorFechado != null && c.valorFechado > 0) ? Math.abs(q.valor - c.valorFechado) : 1e9);
+      if (dv <= Math.max(CFG.TOL_IGUAL_REAIS, CFG.TOL_IGUAL_PCT * q.valor) && (best === null || dv < best.dv)) best = { dv, c, onde: 'mesmo CNPJ' };
+    }
+    // (b) valor igual em outra unidade do mesmo grupo (só valores a partir de R$ 1.000)
+    if (!best && !q.raiz.startsWith('N:') && q.valor >= CFG.MIN_GRUPO)
+      for (const c of (apRaiz[q.raiz] || [])) { if (c.os === q.os || c.ck === q.ck) continue; if (Math.abs(q.valor - c.valor) <= 1) best = { dv: 0, c, onde: 'outra unidade do mesmo grupo – raiz do CNPJ' }; }
+    if (best) {
+      const c = best.c, conf = (best.onde !== 'mesmo CNPJ' || q.valor < CFG.MIN_SEMELHANTE) ? 'Baixa' : 'Alta';
+      set(q, 'Aprovado em outra OS – valor igual', c.os, 'OS ' + c.os + ' aprovada' + (c.dataAprov != null ? ' em ' + fmtD(c.dataAprov) : '') + ' por ' + brl(c.valor) + ' (' + best.onde + ')', conf); continue;
+    }
+    // (c) candidatos de valor semelhante – resolvidos depois, uma OS aprovada para cada orçamento
+    if (q.valor >= CFG.MIN_SEMELHANTE)
+      for (const c of (apCk[q.ck] || [])) {
+        if (c.os === q.os) continue;
+        const dv = Math.min(rel(q.valor, c.valor), (c.valorFechado != null && c.valorFechado > 0) ? rel(q.valor, c.valorFechado) : 9);
+        if (dv <= CFG.TOL_SEMELHANTE) cands.push({ dv, q, c });
+      }
+    if (DUP_OBS.some(t => obs.includes(t))) set(q, 'Duplicado – orçamento já enviado antes', '', q.obs, 'Alta');
+  }
+  const usadas = new Set();
+  cands.sort((x, y) => x.dv - y.dv);
+  for (const { dv, q, c } of cands) {
+    if ((q.rastreio !== '' && q.rastreio !== 'Duplicado – orçamento já enviado antes') || usadas.has(c.os)) continue;
+    usadas.add(c.os);
+    set(q, 'Aprovado em outra OS – valor semelhante', c.os, 'OS ' + c.os + ' aprovada por ' + brl(c.valor) + ((c.valorFechado != null && Math.abs(c.valorFechado - c.valor) > 0.01) ? ' (fechada por ' + brl(c.valorFechado) + ')' : '') + ' – diferença de ' + (dv * 100).toFixed(1).replace('.', ',') + '%', 'Média');
+  }
+  // (d) mesmo cliente e mesmo valor em outro orçamento não aprovado: conta uma vez só (fica o mais recente)
+  const pend = Q.filter(q => q.status !== 'APROVADO' && q.rastreio === '').sort((x, y) => {
+    const a1 = x.dataCriacao, b1 = y.dataCriacao;
+    if (a1 == null && b1 == null) return y.linha - x.linha; if (a1 == null) return 1; if (b1 == null) return -1;
+    return (b1 - a1) || (y.linha - x.linha);
+  });
+  const vistos = {};
+  for (const q of pend) {
+    const l = (vistos[q.ck] = vistos[q.ck] || []), hit = l.find(s => rel(s.valor, q.valor) <= 0.01);
+    if (hit) set(q, 'Reenvio – mesmo valor de outro orçamento não aprovado', hit.os, 'Mesmo cliente e mesmo valor da OS ' + hit.os + ' (' + hit.status.toLowerCase() + '), mais recente – contar a oportunidade uma vez só', 'Média');
+    else l.push({ valor: q.valor, os: q.os, status: q.status });
+  }
+  // (e) o que sobrou
+  for (const q of Q) {
+    q.diasAberto = (q.status === 'AGUARDANDO APROVAÇÃO' && q.dataCriacao != null) ? Math.round((hoje - q.dataCriacao) / DIA) : null;
+    if (q.rastreio === '') {
+      if (q.contrato && q.status !== 'AGUARDANDO APROVAÇÃO') set(q, 'Cliente com contrato – verificar se o serviço foi absorvido', '', 'Cliente com contrato: ' + q.contrato, 'Baixa');
+      else if (q.status === 'NÃO APROVADA') q.rastreio = 'Perdido – sem aprovação equivalente';
+      else if (q.status === 'CANCELADA') q.rastreio = 'Cancelado – sem aprovação equivalente';
+      else if (q.diasAberto != null && q.diasAberto > CFG.DIAS_FRIO) q.rastreio = 'Em aberto há mais de ' + CFG.DIAS_FRIO + ' dias';
+      else q.rastreio = 'Em aberto (até ' + CFG.DIAS_FRIO + ' dias)';
+    }
+    const r = q.rastreio;
+    q.grupo = q.status === 'APROVADO' ? 'Aprovado' : /^(Aprovado em outra|Executado|Substituído|Integrou)/.test(r) ? 'Recuperado' : /^(Reenvio|Duplicado)/.test(r) ? 'Duplicado'
+      : r.startsWith('Cliente com contrato') ? 'Verificar contrato' : r.startsWith('Perdido') ? 'Perdido' : r.startsWith('Cancelado') ? 'Cancelado' : 'Em aberto';
+    q.frio = r.startsWith('Em aberto há mais');
+  }
+
+  /* ---------- resumo por cliente e por grupo ---------- */
+  const soma = (arr, f) => arr.reduce((s, q) => s + (f(q) ? q.valor : 0), 0), conta = (arr, f) => arr.reduce((s, q) => s + (f(q) ? 1 : 0), 0);
+  const agrega = x => {
+    const is = st => q => q.status === st, gr = g => q => q.grupo === g, ap = x.filter(is('APROVADO'));
+    const d = { nome: x[0].nome, n: x.length, v: soma(x, () => true), na: ap.length, va: soma(ap, () => true), vf: ap.reduce((s, q) => s + (q.valorFechado != null ? q.valorFechado : q.valor), 0),
+      nn: conta(x, is('NÃO APROVADA')), vn: soma(x, is('NÃO APROVADA')), nc: conta(x, is('CANCELADA')), vc: soma(x, is('CANCELADA')), ng: conta(x, is('AGUARDANDO APROVAÇÃO')), vg: soma(x, is('AGUARDANDO APROVAÇÃO')),
+      np: conta(x, gr('Perdido')), vp: soma(x, gr('Perdido')), nr: conta(x, gr('Recuperado')), vr: soma(x, gr('Recuperado')), nd: conta(x, gr('Duplicado')), vd: soma(x, gr('Duplicado')),
+      nfr: conta(x, q => q.frio), vfr: soma(x, q => q.frio), contrato: x[0].contrato, filial: maisFrequente(x.map(q => q.filial)),
+      ult: x.reduce((m, q) => q.dataCriacao != null && (m == null || q.dataCriacao > m) ? q.dataCriacao : m, null) };
+    const dec = d.na + d.nn + d.nc; d.conv = dec ? d.na / dec : null; return d;
+  };
+  const perfil = c => {
+    if (c.contrato) return 'Cliente com contrato';
+    if (c.na === 0) return c.ng === c.n ? 'Só orçamentos em aberto' : c.n >= 3 ? 'Nunca fechou – 3 ou mais orçamentos' : c.n === 2 ? 'Nunca fechou – 2 orçamentos' : 'Orçou 1 vez e não fechou';
+    const dec = c.na + c.nn + c.nc, k = c.na / dec;
+    return k >= 0.8 ? 'Fecha quase sempre (≥80%)' : (dec >= 3 && k < 0.34) ? 'Baixa conversão (<34%)' : 'Conversão parcial';
+  };
+  const C = [...porCk].map(([ck, x]) => { const c = agrega(x); c.id = ck; c.cnpj = ck.startsWith('N:') ? '' : ck; c.perfil = perfil(c); return c; });
+  const porRaiz = new Map(); for (const q of Q) { if (!porRaiz.has(q.raiz)) porRaiz.set(q.raiz, []); porRaiz.get(q.raiz).push(q); }
+  const G = [...porRaiz].map(([raiz, x]) => { const g = agrega(x); g.raiz = raiz; g.un = new Set(x.map(q => q.ck)).size; g.nome = maisFrequente(x.map(q => q.nome)); return g; }).filter(g => g.un > 1).sort((x, y) => y.n - x.n);
+
+  /* ---------- cortes de conversão ---------- */
+  const faixas = [[300, 'Até R$ 300'], [1000, 'R$ 300 a 1 mil'], [3000, 'R$ 1 a 3 mil'], [10000, 'R$ 3 a 10 mil'], [Infinity, 'Acima de R$ 10 mil']];
+  for (const q of Q) { q.faixa = faixas.find(f => q.valor <= f[0])[1]; q.mes = q.dataCriacao != null ? new Date(q.dataCriacao).toISOString().slice(0, 7) : ''; }
+  const corte = (campo, filtro) => { const m = new Map(); for (const q of Q) { if (filtro && !filtro(q)) continue; const k = q[campo] || '(não informado)'; if (!m.has(k)) m.set(k, []); m.get(k).push(q); }
+    return [...m].map(([k, x]) => { const na = conta(x, q => q.status === 'APROVADO'), dec = conta(x, q => q.status !== 'AGUARDANDO APROVAÇÃO'); return { k, n: x.length, na, conv: dec ? na / dec : null, v: soma(x, () => true), vp: soma(x, q => q.grupo === 'Perdido') }; }); };
+  const cortes = { origem: corte('origem'), envio: corte('envio'), faixa: corte('faixa').sort((x, y) => faixas.findIndex(f => f[1] === x.k) - faixas.findIndex(f => f[1] === y.k)),
+    filial: corte('filial'), resp: corte('resp'), mes: corte('mes', q => q.mes >= CFG.ANO + '-01').sort((x, y) => x.k < y.k ? -1 : 1) };
+
+  /* ---------- totais ---------- */
+  const g = f => ({ n: conta(Q, f), v: soma(Q, f) });
+  const aprov = Q.filter(q => q.status === 'APROVADO');
+  const dif = aprov.filter(q => q.valorFechado != null && Math.abs(q.valorFechado - q.valor) > 0.01 && q.rastreio !== 'Aprovado e depois cancelado').map(q => ({ os: q.os, nome: q.nome, valor: q.valor, fechado: q.valorFechado, dif: q.valorFechado - q.valor, obs: q.obs })).sort((x, y) => x.dif - y.dif);
+  const dias = aprov.filter(q => q.dataAprov != null && q.dataCriacao != null).map(q => Math.max(0, Math.round((q.dataAprov - q.dataCriacao) / DIA))).sort((x, y) => x - y);
+  const quantil = p => { if (!dias.length) return null; const i = (dias.length - 1) * p, lo = Math.floor(i); return dias[lo] + (dias[Math.min(lo + 1, dias.length - 1)] - dias[lo]) * (i - lo); };
+  const perdidos = Q.filter(q => q.grupo === 'Perdido').sort((x, y) => y.valor - x.valor);
+  const S = { total: g(() => true), aprov: g(q => q.status === 'APROVADO'), nao: g(q => q.status === 'NÃO APROVADA'), canc: g(q => q.status === 'CANCELADA'), aguard: g(q => q.status === 'AGUARDANDO APROVAÇÃO'),
+    fechado: C.reduce((s, c) => s + c.vf, 0), perd: g(q => q.grupo === 'Perdido'), cancl: g(q => q.grupo === 'Cancelado'), rec: g(q => q.grupo === 'Recuperado'), dup: g(q => q.grupo === 'Duplicado'), vc: g(q => q.grupo === 'Verificar contrato'),
+    frio: g(q => q.frio), quente: g(q => q.grupo === 'Em aberto' && !q.frio), recSemelhante: g(q => q.rastreio === 'Aprovado em outra OS – valor semelhante'),
+    difMenor: { n: dif.filter(d => d.dif < 0).length, v: dif.filter(d => d.dif < 0).reduce((s, d) => s + d.dif, 0) }, difMaior: { n: dif.filter(d => d.dif > 0).length, v: dif.filter(d => d.dif > 0).reduce((s, d) => s + d.dif, 0) },
+    clientes: C.length, medDias: quantil(0.5), p75Dias: quantil(0.75),
+    top10Perd: perdidos.slice(0, 10).reduce((s, q) => s + q.valor, 0), perdGrandes: { n: perdidos.filter(q => q.valor >= 3000).length, v: perdidos.filter(q => q.valor >= 3000).reduce((s, q) => s + q.valor, 0) },
+    perfis: Object.fromEntries([...new Set(C.map(c => c.perfil))].map(p => { const x = C.filter(c => c.perfil === p); return [p, { n: x.length, orc: x.reduce((s, c) => s + c.n, 0), v: x.reduce((s, c) => s + c.v, 0), va: x.reduce((s, c) => s + c.va, 0), vp: x.reduce((s, c) => s + c.vp, 0) }]; })) };
+
+  /* ---------- conferências entre as abas ---------- */
+  const inc = [];
+  for (const q of aprov) if (!q.naAprovados) inc.push({ os: q.os, nome: q.nome, valor: q.valor, problema: 'Aprovado na relação de orçamentos, mas a OS não aparece na aba Aprovados' });
+  for (const x of A) if (!x.naRelacao) inc.push({ os: x.os || 's/ OS', nome: x.cliente, valor: x.valor || 0, problema: 'Está na aba Aprovados (' + x.status + '), mas a OS não está na relação de orçamentos' });
+  for (const q of Q) if (q.status === 'NÃO APROVADA' && q.naAprovados) inc.push({ os: q.os, nome: q.nome, valor: q.valor, problema: 'Status "NÃO APROVADA" na relação, mas consta na aba Aprovados como "' + q.statusAprovados + '"' });
+  const vistoOS = {}; for (const q of Q) { if (vistoOS[q.os] === 1) inc.push({ os: q.os, nome: q.nome, valor: q.valor, problema: 'OS lançada em mais de uma linha da relação de orçamentos (valor contado em dobro)' }); vistoOS[q.os] = (vistoOS[q.os] || 0) + 1; }
+  const repA = {}; for (const x of A) if (x.os && x.os !== '-') (repA[x.os] = repA[x.os] || []).push(x);
+  for (const [os, x] of Object.entries(repA)) if (x.length > 1) inc.push({ os, nome: x[0].cliente, valor: x.reduce((s, r) => s + (r.valor || 0), 0), problema: 'OS aparece ' + x.length + ' vezes na aba Aprovados (' + x.map(r => brl(r.valor || 0)).join('; ') + ') – conferir se são parcelas ou lançamento repetido' });
+  for (const q of Q) if (q.rastreio.startsWith('Integrou')) inc.push({ os: q.os, nome: q.nome, valor: q.valor, problema: 'Status "' + q.status + '", mas o valor é idêntico a um contrato vigente – atualizar o status' });
+
+  return { Q, C, G, S, cortes, dif, inc, porCk };
+}
+
+
+/* =====================================================================
+   TELA
+   ===================================================================== */
+const $ = s => document.querySelector(s);
+const brl0 = v => 'R$ ' + Math.round(v).toLocaleString('pt-BR');
+const brl2 = v => 'R$ ' + v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const pct = v => v == null ? '–' : (v * 100).toFixed(0) + '%';
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const fmtD = t => t == null ? '' : new Date(t).toISOString().slice(0, 10).split('-').reverse().join('/');
+const fmtCnpj = c => c ? c.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5') : 'sem CNPJ';
+const guarda = { get(k) { try { return localStorage.getItem('orc.' + k) || ''; } catch (e) { return ''; } }, set(k, v) { try { v ? localStorage.setItem('orc.' + k, v) : localStorage.removeItem('orc.' + k); } catch (e) {} } };
+
+// Conexão: 1º o que veio no endereço (?api=...&chave=...), 2º o que está guardado no navegador, 3º o CFG.
+const qs = new URLSearchParams(location.search);
+const con = { url: qs.get('api') || guarda.get('url') || CFG.API_URL || '', chave: qs.get('chave') || guarda.get('chave') || '', quem: guarda.get('quem') };
+let R = null, P = null, carregando = false;
+const st = { p: 'Todos', q: '', k: 'v', dir: -1, lim: 50, open: null, edit: null, msg: null };
+
+function estado(tipo, texto) { $('#led').className = 'led ' + tipo; $('#sync').textContent = texto; }
+
+async function carregar(silencioso) {
+  if (carregando) return;
+  if (!con.url || !con.chave) { abrirConfig('Informe o endereço do App da Web e a chave para carregar os dados.'); return; }
+  if (silencioso && st.edit) return;            // não atualiza por baixo de quem está editando
+  carregando = true; estado('busy', 'Lendo a planilha…'); $('#bAtualizar').disabled = true;
+  try {
+    const r = await fetch(con.url + (con.url.includes('?') ? '&' : '?') + 'chave=' + encodeURIComponent(con.chave) + '&t=' + Date.now(), { redirect: 'follow' });
+    if (!r.ok) throw new Error('A planilha respondeu com erro ' + r.status + '.');
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.erro || 'Não foi possível ler a planilha.');
+    const agora = new Date();
+    P = j; R = analisar(j, Date.UTC(agora.getFullYear(), agora.getMonth(), agora.getDate()), CFG);
+    $('#fonte').textContent = 'Fonte: ' + j.planilha + '. Página aberta ' + (j.podeEditar ? 'com permissão de edição.' : 'somente para leitura.');
+    estado('ok', 'Planilha lida em ' + j.atualizado + ' · relê a cada ' + CFG.ATUALIZAR_A_CADA_MIN + ' min');
+    $('#config').hidden = true; $('#app').hidden = false; pintar();
+  } catch (e) {
+    const m = (e instanceof TypeError) ? 'Não consegui falar com a planilha. Confira o endereço do App da Web e se a implantação está como "Qualquer pessoa".' : e.message;
+    estado('err', m); if (!R) abrirConfig(m, true);
+  } finally { carregando = false; $('#bAtualizar').disabled = false; }
+}
+
+function abrirConfig(msg, erro) {
+  $('#config').hidden = false; $('#cUrl').value = con.url; $('#cChave').value = con.chave; $('#cQuem').value = con.quem;
+  $('#cMsg').textContent = msg || ''; $('#cMsg').className = 'msg' + (erro ? ' err' : '');
+}
+$('#bConfig').onclick = () => abrirConfig('');
+$('#cFechar').onclick = () => { $('#config').hidden = true; };
+$('#cSalvar').onclick = () => {
+  con.url = $('#cUrl').value.trim(); con.chave = $('#cChave').value.trim(); con.quem = $('#cQuem').value.trim();
+  if (!/^https:\/\/script\.google\.com\/.+\/exec$/.test(con.url)) { $('#cMsg').textContent = 'O endereço precisa ser o do App da Web do Apps Script e terminar em /exec.'; $('#cMsg').className = 'msg err'; return; }
+  guarda.set('url', con.url); guarda.set('chave', con.chave); guarda.set('quem', con.quem); R = null; carregar();
+};
+$('#cLimpar').onclick = () => { ['url', 'chave', 'quem'].forEach(k => guarda.set(k, '')); con.url = CFG.API_URL || ''; con.chave = ''; con.quem = ''; abrirConfig('Dados de conexão apagados deste navegador.'); };
+$('#bAtualizar').onclick = () => carregar();
+setInterval(() => { if (!document.hidden) carregar(true); }, Math.max(1, CFG.ATUALIZAR_A_CADA_MIN) * 60000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden && R) carregar(true); });
+
+/* ---------- desenho ---------- */
+const COR = { Aprovado: '--ok', Recuperado: '--rec', Duplicado: '--dup', 'Verificar contrato': '--vc', Perdido: '--lost', Cancelado: '--canc', 'Em aberto': '--open' };
+const PERFIS = ['Todos', 'Nunca fechou – 3 ou mais orçamentos', 'Nunca fechou – 2 orçamentos', 'Baixa conversão (<34%)', 'Orçou 1 vez e não fechou', 'Só orçamentos em aberto', 'Conversão parcial', 'Fecha quase sempre (≥80%)', 'Cliente com contrato'];
+const COLS = [['nome', 'Cliente'], ['n', 'Orç.'], ['v', 'Orçado'], ['na', 'Aprov.'], ['va', 'Valor aprovado'], ['nn', 'Não aprov.'], ['nc', 'Canc.'], ['ng', 'Aguard.'], ['vg', 'Valor aguardando'], ['vp', 'Perdido'], ['vr', 'Recuperado'], ['conv', 'Conversão']];
+
+function pintar() {
+  const S = R.S, D = CFG.DIAS_FRIO;
+  const G = [['Aprovado', '--ok', S.aprov, 'aprovado na planilha'], ['Recuperado', '--rec', S.rec, 'saiu em outra OS ou em contrato'], ['Duplicado', '--dup', S.dup, 'mesmo orçamento enviado de novo'], ['Verificar contrato', '--vc', S.vc, 'cliente com contrato, conferir'], ['Perdido', '--lost', S.perd, 'sem aprovação equivalente'], ['Cancelado', '--canc', S.cancl, 'cancelado sem equivalente'], ['Em aberto há mais de ' + D + ' dias', '--open', S.frio, 'aguardando, provavelmente frio'], ['Em aberto até ' + D + ' dias', '--open2', S.quente, 'aguardando, ainda quente']];
+  const tot = S.total.v || 1;
+  $('#kpis').innerHTML = [[brl0(S.total.v), S.total.n + ' orçamentos para ' + S.clientes + ' clientes', ''], [brl0(S.aprov.v), S.aprov.n + ' aprovados · ' + pct(S.aprov.v / tot) + ' do valor orçado', '--ok'], [brl0(S.perd.v), S.perd.n + ' perdidos depois do rastreio', '--lost'], [brl0(S.frio.v), S.frio.n + ' aguardando há mais de ' + D + ' dias', '--open'], [brl0(S.rec.v), S.rec.n + ' não aprovados que saíram por outro caminho', '--rec']]
+    .map(k => `<div class="kpi"><b>${k[0]}</b><span>${k[2] ? `<i style="background:var(${k[2]})"></i>` : ''}${k[1]}</span></div>`).join('');
+  $('#band').innerHTML = G.map(g => `<div title="${g[0]}: ${brl0(g[2].v)}" style="background:var(${g[1]});flex:${g[2].v}"></div>`).join('');
+  $('#legend').innerHTML = G.map(g => `<div><i style="background:var(${g[1]})"></i><span>${g[0]}<br><em>${g[3]}</em></span><span class="num" style="text-align:right;flex:none">${brl0(g[2].v)}<br><em>${g[2].n} orç. · ${pct(g[2].v / tot)}</em></span></div>`).join('');
+
+  // Achados: todos calculados a partir dos dados lidos agora
+  const pf = k => S.perfis[k] || { n: 0, vp: 0 }, once = pf('Orçou 1 vez e não fechou'), n3 = pf('Nunca fechou – 3 ou mais orçamentos'), n2 = pf('Nunca fechou – 2 orçamentos');
+  const cv = (c, k) => { const x = R.cortes[c].find(i => i.k === k); return x ? pct(x.conv) : '–'; };
+  const fx = R.cortes.faixa, f1 = fx[0], fN = fx[fx.length - 1];
+  const integ = R.Q.filter(q => q.rastreio.startsWith('Integrou') && q.status !== 'APROVADO');
+  $('#find').innerHTML = [
+    ['A perda está concentrada em orçamentos grandes', `Dos ${brl0(S.perd.v)} perdidos, <b>${brl0(S.perdGrandes.v)} vêm de ${S.perdGrandes.n} orçamentos a partir de R$ 3 mil</b>, e os 10 maiores somam ${brl0(S.top10Perd)}.` + (f1 && fN ? ` Conversão de ${pct(fN.conv)} na faixa "${fN.k.toLowerCase()}" e de ${pct(f1.conv)} na faixa "${f1.k.toLowerCase()}".` : '')],
+    ['Quem pede uma vez e some', `<b>${once.n} clientes pediram um único orçamento e não fecharam: ${brl0(once.vp)}</b>, ${pct(S.perd.v ? once.vp / S.perd.v : 0)} de tudo que foi perdido. Os ${n3.n + n2.n} clientes que pediram 2 ou mais vezes e nunca fecharam somam ${brl0(n3.vp + n2.vp)}.`],
+    ['Orçamentos parados em "aguardando"', `${S.aguard.n} orçamentos estão aguardando (${brl0(S.aguard.v)}); <b>${S.frio.n} deles há mais de ${D} dias (${brl0(S.frio.v)})</b>.` + (S.medDias != null ? ` Quem aprova, aprova rápido: metade em até ${Math.round(S.medDias)} dias e 75% em até ${Math.round(S.p75Dias)}. Os parados além disso são provavelmente perda ainda não baixada.` : '')],
+    ['Origem e canal', `Orçamentos de aviso de vencimento fecham <b>${cv('origem', 'Aviso de vencimento')}</b> das vezes; os solicitados pelo cliente, <b>${cv('origem', 'Solicitado pelo cliente')}</b>. Pelo WhatsApp a conversão é de ${cv('envio', 'WhatsApp')}, por e-mail ${cv('envio', 'E-mail')}.`],
+    ['Parte do "não aprovado" não foi perda', `${S.rec.n} orçamentos (${brl0(S.rec.v)}) têm sinal de que o serviço saiu por outra OS ou contrato, ${S.recSemelhante.n} deles por valor apenas semelhante. ${S.dup.n} (${brl0(S.dup.v)}) são o mesmo orçamento enviado de novo.` + (integ.length ? ` Com valor idêntico a contrato e status ainda não aprovado: OS ${integ.map(q => esc(q.os)).join(', ')}.` : '')],
+    ['Aprovado nem sempre fecha pelo valor orçado', `<b>${S.difMenor.n} OS aprovadas estão na aba Aprovados por menos que o orçado</b>, uma diferença de ${brl0(-S.difMenor.v)}. ${S.difMaior.n} fecharam acima (${brl0(S.difMaior.v)}). A lista está em Conferências.`]
+  ].map(f => `<article><h3>${f[0]}</h3><p>${f[1]}</p></article>`).join('');
+
+  const CT = [['origem', 'Origem do orçamento'], ['envio', 'Canal de envio'], ['faixa', 'Faixa de valor'], ['filial', 'Filial'], ['resp', 'Responsável'], ['mes', 'Mês de criação']];
+  $('#cuts').innerHTML = CT.map(([k, t]) => { let a = R.cortes[k].filter(c => c.n > 1); if (k !== 'faixa' && k !== 'mes') a = a.slice().sort((x, y) => (y.conv == null ? -1 : y.conv) - (x.conv == null ? -1 : x.conv));
+    return `<div class="cut"><h3>${t}</h3>${a.map(c => `<div class="row"><span class="lab" title="${esc(c.k)}">${esc(k === 'mes' ? c.k.slice(5) + '/' + c.k.slice(0, 4) : c.k)} <small>${c.n}</small></span><div class="bar"><div style="width:${(c.conv || 0) * 100}%"></div></div><span class="num">${pct(c.conv)}</span></div>`).join('')}${k === 'mes' ? '<p class="muted" style="font-size:12px;margin:6px 0 0">Meses recentes parecem converter mais enquanto os não aprovados ainda estão como aguardando.</p>' : ''}</div>`; }).join('');
+
+  $('#dicaEdicao').textContent = P.podeEditar ? 'Use "Editar" na linha do orçamento para alterar valor, status, data de aprovação ou observação direto na planilha.' : '';
+  chips(); tabela();
+  $('#tg thead').innerHTML = '<tr><th>Grupo</th><th>Unidades</th><th>Orç.</th><th>Orçado</th><th>Aprov.</th><th>Valor aprovado</th><th>Não aprov.</th><th>Canc.</th><th>Aguard.</th><th>Perdido</th><th>Conversão</th></tr>';
+  $('#tg tbody').innerHTML = R.G.slice(0, 30).map(g => `<tr><td>${esc(g.nome)}</td><td class="num">${g.un}</td><td class="num">${g.n}</td><td class="num">${brl0(g.v)}</td><td class="num">${g.na}</td><td class="num">${brl0(g.va)}</td><td class="num">${g.nn}</td><td class="num">${g.nc}</td><td class="num">${g.ng}</td><td class="num">${brl0(g.vp)}</td><td class="num">${pct(g.conv)}</td></tr>`).join('');
+  $('#sDif').textContent = 'Orçado × fechado: ' + R.dif.length + ' OS aprovadas com valor diferente na aba Aprovados';
+  $('#tdif thead').innerHTML = '<tr><th>OS</th><th class="l">Cliente</th><th>Orçado</th><th>Fechado</th><th>Diferença</th><th class="l">Observação</th></tr>';
+  $('#tdif tbody').innerHTML = R.dif.map(d => `<tr><td class="num">${esc(d.os)}</td><td class="l" style="white-space:normal">${esc(d.nome)}</td><td class="num">${brl2(d.valor)}</td><td class="num">${brl2(d.fechado)}</td><td class="num">${brl2(d.dif)}</td><td class="l" style="white-space:normal">${esc(/^[XY]:/.test(d.obs) ? '' : d.obs)}</td></tr>`).join('');
+  $('#sInc').textContent = 'Inconsistências entre as abas: ' + R.inc.length;
+  $('#tinc thead').innerHTML = '<tr><th>OS</th><th class="l">Cliente</th><th>Valor</th><th class="l">O que conferir</th></tr>';
+  $('#tinc tbody').innerHTML = R.inc.map(d => `<tr><td class="num">${esc(d.os)}</td><td class="l" style="white-space:normal">${esc(d.nome)}</td><td class="num">${brl2(d.valor)}</td><td class="l" style="white-space:normal">${esc(d.problema)}</td></tr>`).join('');
+  $('#criterios').innerHTML = `<b>Recuperado:</b> há outra OS aprovada do mesmo CNPJ com valor igual (até ${brl2(CFG.TOL_IGUAL_REAIS)} de diferença) ou semelhante (até ${pct(CFG.TOL_SEMELHANTE)}, só a partir de ${brl0(CFG.MIN_SEMELHANTE)}, uma OS aprovada para cada orçamento), ou o valor é idêntico a um contrato da aba Contratos. <b>Duplicado:</b> aviso reenviado ou mesmo cliente e mesmo valor em outro orçamento não aprovado; a oportunidade conta uma vez. <b>Verificar contrato:</b> o cliente tem contrato, mas nenhuma OS aprovada bate com o valor. <b>Perdido:</b> nenhuma aprovação equivalente encontrada. Correspondência por valor semelhante é indício, não prova: confira a OS relacionada antes de dar baixa.`;
+}
+
+function chips() { $('#chips').innerHTML = PERFIS.map(p => `<button aria-pressed="${st.p === p}" data-p="${esc(p)}">${esc(p)}${p !== 'Todos' && R.S.perfis[p] ? ' · ' + R.S.perfis[p].n : ''}</button>`).join(''); }
+
+function tabela() {
+  const q = st.q.toLowerCase().trim(), dig = q.replace(/\D/g, '');
+  const a = R.C.filter(c => (st.p === 'Todos' || c.perfil === st.p) && (!q || c.nome.toLowerCase().includes(q) || (dig.length >= 3 && c.cnpj.includes(dig)) || (dig.length >= 4 && R.porCk.get(c.id).some(o => o.os.includes(dig)))));
+  a.sort((x, y) => { const A = x[st.k], B = y[st.k]; return (typeof A === 'string' ? A.localeCompare(B) : ((A == null ? -1 : A) - (B == null ? -1 : B))) * st.dir; });
+  const sm = k => a.reduce((s, c) => s + c[k], 0);
+  $('#count').textContent = a.length + ' clientes · ' + brl0(sm('v')) + ' orçados · ' + brl0(sm('va')) + ' aprovados · ' + brl0(sm('vp')) + ' perdidos';
+  $('#tc thead').innerHTML = '<tr>' + COLS.map(c => `<th data-k="${c[0]}">${c[1]}${st.k === c[0] ? (st.dir < 0 ? ' ↓' : ' ↑') : ''}</th>`).join('') + '</tr>';
+  $('#tc tbody').innerHTML = a.slice(0, st.lim).map(c => `<tr class="c" tabindex="0" data-id="${esc(c.id)}"><td>${esc(c.nome)}<br><span class="muted num" style="font-size:11.5px">${fmtCnpj(c.cnpj)} · ${esc(c.perfil)}</span></td><td class="num">${c.n}</td><td class="num">${brl0(c.v)}</td><td class="num">${c.na}</td><td class="num">${brl0(c.va)}</td><td class="num">${c.nn}</td><td class="num">${c.nc}</td><td class="num">${c.ng}</td><td class="num">${brl0(c.vg)}</td><td class="num">${brl0(c.vp)}</td><td class="num">${brl0(c.vr)}</td><td class="num">${pct(c.conv)}</td></tr>` + (st.open === c.id ? detalhe(c) : '')).join('');
+  $('#more').hidden = a.length <= st.lim;
+}
+
+function detalhe(c) {
+  const linhas = R.porCk.get(c.id).slice().sort((x, y) => (x.dataCriacao || 0) - (y.dataCriacao || 0)), ed = P.podeEditar;
+  return `<tr class="d"><td colspan="${COLS.length}"><div style="overflow-x:auto"><table><thead><tr><th class="l">OS</th><th class="l">Criação</th><th>Valor orçado</th><th class="l">Status na planilha</th><th class="l">Situação apurada</th><th class="l">Rastreio</th>${ed ? '<th></th>' : ''}</tr></thead><tbody>${linhas.map(q => {
+    const k = q.linha + '|' + q.os;
+    return `<tr><td class="l num">${esc(q.os)}</td><td class="l num">${fmtD(q.dataCriacao)}</td><td class="num">${brl2(q.valor)}${q.valorFechado != null && Math.abs(q.valorFechado - q.valor) > 0.01 && q.status === 'APROVADO' ? `<br><span class="muted">fechado ${brl2(q.valorFechado)}</span>` : ''}</td><td class="l">${esc(q.status)}${q.dataAprov != null ? ' em ' + fmtD(q.dataAprov) : ''}<br><span class="muted">${esc(q.origem)}${q.diasAberto != null ? ' · ' + q.diasAberto + ' dias em aberto' : ''}</span></td><td class="l"><span class="dot" style="background:var(${COR[q.grupo]})"></span>${esc(q.grupo)}</td><td class="l" style="white-space:normal;min-width:260px">${esc(q.rastreio)}${q.detalhe ? `<br><span class="muted">${esc(q.detalhe)}${q.confianca ? ' · confiança ' + q.confianca.toLowerCase() : ''}</span>` : ''}${q.obs && q.obs !== q.detalhe && !/^[XY]:/.test(q.obs) ? `<br><span class="muted">Obs.: ${esc(q.obs)}</span>` : ''}</td>${ed ? `<td><button data-edit="${esc(k)}">Editar</button></td>` : ''}</tr>` + (st.edit === k ? formEdicao(q) : '');
+  }).join('')}</tbody></table></div></td></tr>`;
+}
+
+function formEdicao(q) {
+  const m = st.msg;
+  return `<tr class="e"><td colspan="7"><form class="form" data-form="${esc(q.linha + '|' + q.os)}">
+    <label>Valor (R$)<input name="valor" inputmode="decimal" value="${q.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, useGrouping: false })}"></label>
+    <label>Status<select name="status">${(P.statusValidos || []).concat((P.statusValidos || []).includes(q.status) ? [] : [q.status]).map(s => `<option${s === q.status ? ' selected' : ''}>${esc(s)}</option>`).join('')}</select></label>
+    <label>Data de aprovação (dd/mm/aaaa)<input name="dataAprovacao" inputmode="numeric" placeholder="dd/mm/aaaa" value="${fmtD(q.dataAprov)}"></label>
+    <label class="wide">Observações de follow-up<textarea name="obs" rows="2">${esc(q.obs)}</textarea></label>
+    <div class="acts"><button class="pri" type="submit">Gravar na planilha</button><button type="button" data-cancel="1">Cancelar</button>
+    <span class="msg ${m && m.erro ? 'err' : 'ok'}">${m ? esc(m.texto) : 'Linha ' + q.linha + ' da aba de orçamentos. A alteração fica registrada na aba de log.'}</span></div></form></td></tr>`;
+}
+
+async function gravar(form) {
+  const [linha, os] = form.dataset.form.split('|'), q = R.Q.find(x => String(x.linha) === linha && x.os === os), f = new FormData(form), campos = {};
+  const vTxt = String(f.get('valor')).replace(/R\$/g, '').replace(/\s/g, ''), v = Number(vTxt.includes(',') ? vTxt.replace(/\./g, '').replace(',', '.') : vTxt);
+  if (!isFinite(v) || v < 0 || vTxt === '') { st.msg = { erro: true, texto: 'Valor inválido. Use o formato 1500,00.' }; return tabela(); }
+  const dt = String(f.get('dataAprovacao')).trim(), obs = String(f.get('obs')).trim(), status = String(f.get('status'));
+  if (dt && !/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(dt)) { st.msg = { erro: true, texto: 'Data inválida. Use dd/mm/aaaa.' }; return tabela(); }
+  if (Math.abs(v - q.valor) > 0.004) campos.valor = Math.round(v * 100) / 100;
+  if (status !== q.status) campos.status = status;
+  if (dt !== fmtD(q.dataAprov)) campos.dataAprovacao = dt;
+  if (obs !== q.obs) campos.obs = obs;
+  if (!Object.keys(campos).length) { st.msg = { erro: true, texto: 'Nada foi alterado.' }; return tabela(); }
+  form.querySelectorAll('button,input,select,textarea').forEach(b => b.disabled = true);
+  try {
+    // text/plain evita a checagem prévia (CORS) que o Apps Script não responde
+    const r = await fetch(con.url, { method: 'POST', redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ chave: con.chave, acao: 'atualizar', linha: Number(linha), os, campos, quem: con.quem }) });
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.erro || 'A planilha recusou a alteração.');
+    st.edit = null; st.msg = null; estado('busy', 'Alteração gravada. Relendo a planilha…'); await carregar();
+  } catch (e) { st.msg = { erro: true, texto: (e instanceof TypeError) ? 'Sem resposta da planilha. Confira antes de tentar de novo: a alteração pode ter sido gravada.' : e.message }; tabela(); }
+}
+
+$('#chips').onclick = e => { const b = e.target.closest('button'); if (!b) return; st.p = b.dataset.p; st.lim = 50; chips(); tabela(); };
+$('#q').oninput = e => { st.q = e.target.value; st.lim = 50; tabela(); };
+$('#tc thead').onclick = e => { const t = e.target.closest('th'); if (!t) return; const k = t.dataset.k; if (st.k === k) st.dir *= -1; else { st.k = k; st.dir = k === 'nome' ? 1 : -1; } tabela(); };
+$('#tc tbody').onclick = e => {
+  const ed = e.target.closest('[data-edit]'); if (ed) { st.edit = st.edit === ed.dataset.edit ? null : ed.dataset.edit; st.msg = null; return tabela(); }
+  if (e.target.closest('[data-cancel]')) { st.edit = null; st.msg = null; return tabela(); }
+  if (e.target.closest('tr.d')) return;
+  const r = e.target.closest('tr.c'); if (!r) return; st.open = st.open === r.dataset.id ? null : r.dataset.id; st.edit = null; tabela();
+};
+$('#tc tbody').onkeydown = e => { if (e.key === 'Enter' && e.target.matches('tr.c')) { st.open = st.open === e.target.dataset.id ? null : e.target.dataset.id; st.edit = null; tabela(); } };
+$('#tc tbody').addEventListener('submit', e => { e.preventDefault(); gravar(e.target); });
+$('#more').onclick = () => { st.lim += 50; tabela(); };
+
+carregar();
+</script>
+</body>
+</html>
