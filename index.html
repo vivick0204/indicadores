@@ -262,6 +262,7 @@ const CFG = {
     '53221255005290': 'AME ATIBAIA'
   }
 };
+const VERSAO_SCRIPT_ESPERADA = 4;   // a página foi feita para o Code.gs dessa versão
 
 /* =====================================================================
    CÁLCULO – recebe o que a planilha devolveu e monta toda a análise.
@@ -500,10 +501,11 @@ function analisar(P, hoje, CFG) {
 }
 
 /* ---- Célula de NF da aba "Emissão de NFs" (mesmo código na página e no Apps Script) ----
-   Uma NF por linha da célula, no formato  NF 18321 · 31/03/2026 · R$ 8.077,50 · observação
+   Uma NF por linha da célula (ou separadas por ponto e vírgula), no formato
+   NF 18321 · 31/03/2026 · R$ 8.077,50 · observação
    Também entende o que for digitado à mão: "18321 31/03 8077,50", "NF 18321", "R$ 5.000"... */
 function nfLerCelula(txt, ano) {
-  return String(txt == null ? '' : txt).split(/\r?\n/).map(function (linha) {
+  return String(txt == null ? '' : txt).split(/\r?\n|;/).map(function (linha) {
     var s = linha.trim(), r = { texto: s, numero: '', data: '', valor: null, obs: '' };
     if (!s) return null;
     var resto = s;
@@ -524,7 +526,7 @@ function nfLerCelula(txt, ano) {
 }
 function nfEscrever(nf) {
   var v = Number(nf.valor).toFixed(2).split('.'), int = v[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-  return 'NF ' + nf.numero + ' · ' + nf.data + ' · R$ ' + int + ',' + v[1] + (nf.obs ? ' · ' + String(nf.obs).replace(/[\r\n]+/g, ' ') : '');
+  return 'NF ' + nf.numero + ' · ' + nf.data + ' · R$ ' + int + ',' + v[1] + (nf.obs ? ' · ' + String(nf.obs).replace(/[\r\n]+/g, ' ').replace(/;/g, ',') : '');
 }
 
 /* =====================================================================
@@ -914,8 +916,11 @@ window.addEventListener('hashchange', () => rota(true));
 function pintarContratos() {
   const RS = RC.resumo, h = hojeD(), mh = h.getUTCMonth() + 1;
   if (st.calM == null) { st.calA = h.getUTCFullYear(); st.calM = mh; }
-  $('#cAviso').innerHTML = (P.agenda === undefined || P.emissao === undefined) ? '<div class="aviso">A planilha não enviou a agenda e a aba “Emissão de NFs”. Publique a versão nova do Apps Script (Implantar › Gerenciar implantações › Nova versão).</div>'
-    : P.emissao === null ? '<div class="aviso">A aba “Emissão de NFs” não foi encontrada na planilha. Confira o nome da aba (ou ajuste ABA_EMISSAO no Apps Script).</div>' : '';
+  const avisos = [];
+  if ((P.versao || 0) < VERSAO_SCRIPT_ESPERADA) avisos.push(`<b>O Apps Script publicado é de uma versão anterior${P.versao ? ' (' + P.versao + ')' : ''}; esta página precisa da versão ${VERSAO_SCRIPT_ESPERADA}.</b> Por isso não dá para lançar NFs. No Apps Script da planilha: cole o Code.gs novo, salve, e vá em Implantar › Gerenciar implantações › lápis › Versão: <b>Nova versão</b> › Implantar.`);
+  else if (P.emissao === null) avisos.push('A aba “Emissão de NFs” não foi encontrada na planilha. Confira o nome da aba (ou ajuste ABA_EMISSAO no Apps Script).');
+  if (!P.podeEditar) avisos.push('<b>Página aberta com a chave de leitura</b>: dá para ver, mas não para lançar NFs. Clique em “Conexão” (no alto da página) e informe a chave de edição.');
+  $('#cAviso').innerHTML = avisos.map(a => `<div class="aviso">${a}</div>`).join('');
   const visMes = RC.visitas.filter(v => { const d = new Date(v.t); return d.getUTCFullYear() === h.getUTCFullYear() && d.getUTCMonth() + 1 === mh; });
   $('#ckpis').innerHTML = [
     [RS.nVig, 'contratos vigentes · ' + brl0(RS.valorVig) + ' por ano', '--ok'],
@@ -966,7 +971,8 @@ function gradeNF() {
   $('#tnf').innerHTML = `<thead><tr><th>Contrato</th><th>Parcela</th>${MES3.map(m => `<th style="text-align:center">${m}</th>`).join('')}<th>Faturado</th><th>Previsto</th></tr></thead><tbody>` +
     g.map(r => `<tr><td><span class="dot" style="background:hsl(${r.k.cor} 60% 45%)"></span>${esc(r.k.nome)}${r.k.linhaAba ? '' : '<br><span class="muted" style="font-size:11px">não está na aba Emissão de NFs</span>'}</td><td class="num">${r.k.parcela != null ? brl0(r.k.parcela) : '–'}</td>${r.meses.map(x => {
       const sel = st.nf && st.nf.contrato === r.k.nome && st.nf.m === x.m;
-      const txt = x.lista.length ? (x.lista.length === 1 ? (x.lista[0].numero ? 'NF ' + esc(x.lista[0].numero) : 's/ nº') : x.lista.length + ' NFs') + '<br>' + brl0(x.soma) : x.st === 'nota' ? 'anotação' : x.st === 'pendente' ? 'pendente' : x.st === 'prevista' ? 'prevista' : '–';
+      const semValor = x.lista.some(n => n.valor == null);
+      const txt = x.lista.length ? (x.lista.length === 1 ? (x.lista[0].numero ? 'NF ' + esc(x.lista[0].numero) : 's/ nº') : x.lista.length + ' NFs') + '<br>' + (x.soma ? brl0(x.soma) + (semValor ? '*' : '') : 'sem valor') : x.st === 'nota' ? 'anotação' : x.st === 'pendente' ? 'pendente' : x.st === 'prevista' ? 'prevista' : '–';
       const pode = ed || x.texto;
       return `<td><button class="nfc ${x.st}${sel ? ' sel' : ''}" data-nf="${esc(r.k.nome)}|${x.m}"${pode ? '' : ' disabled'} title="${esc(r.k.nome)} · ${MES[x.m - 1]}/${a}${x.texto ? '\n' + esc(x.texto) : ''}">${txt}</button></td>`;
     }).join('')}<td class="num">${brl0(r.fat)}</td><td class="num">${brl0(r.prev)}</td></tr>`).join('') +
@@ -974,8 +980,9 @@ function gradeNF() {
   const conf = [];
   for (const x of RC.semContrato) conf.push(`Linha ${x.linha} da aba Emissão de NFs (“${esc(x.nome)}”) não corresponde a nenhum contrato da aba Contratos, ou repete um contrato. As NFs dela não entram nos totais.`);
   for (const [p, q] of RC.nfRepetidas) conf.push(`NF nº ${esc(p.numero)} aparece duas vezes: ${esc(p.contrato)} em ${MES[p.m - 1]} e ${esc(q.contrato)} em ${MES[q.m - 1]}.`);
-  for (const x of RC.nfs) if (x.eNF && (!x.numero || !x.data || x.valor == null)) conf.push(`${esc(x.contrato)}, ${MES[x.m - 1]}: “${esc(x.texto)}” está sem ${[!x.numero && 'número', !x.data && 'data', x.valor == null && 'valor'].filter(Boolean).join(', ')}.`);
-  $('#nfConf').innerHTML = conf.length ? `<details open><summary>Conferir na aba Emissão de NFs: ${conf.length}</summary><ul style="margin:6px 0 0;padding-left:20px;font-size:12.5px">${conf.map(c => `<li>${c}</li>`).join('')}</ul></details>` : '';
+  const incompletas = RC.nfs.filter(x => x.eNF && (!x.numero || !x.data || x.valor == null));
+  if (incompletas.length) conf.push(`${incompletas.length} NFs digitadas na planilha sem data ou sem valor (só o número). Elas contam como emitidas, mas o valor não entra no faturado. Para completar, abra o mês e use “Corrigir”: ` + incompletas.map(x => `${esc(x.contrato)} ${MES3[x.m - 1]} (${esc(x.numero || x.texto)})`).join(', ') + '.');
+  $('#nfConf').innerHTML = conf.length ? `<details><summary>Conferir na aba Emissão de NFs: ${conf.length}</summary><ul style="margin:6px 0 0;padding-left:20px;font-size:12.5px">${conf.map(c => `<li>${c}</li>`).join('')}</ul></details>` : '';
   painelNF();
 }
 
