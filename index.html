@@ -82,6 +82,48 @@ tr.e td{background:var(--card)!important}
 .panel label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--mut)}
 small.n{color:var(--mut);font-size:12px}
 details summary{cursor:pointer;font-weight:600}
+tr.c>td:first-child,tr.g>td:first-child{white-space:normal;min-width:230px}
+tr.g{cursor:pointer}tr.g:hover>td{background:var(--chip)}
+tr.g.aberto>td{background:var(--chip);font-weight:600}
+.chev{display:inline-block;width:14px;color:var(--mut)}
+.unidades{padding:10px 10px 14px 24px;display:flex;flex-direction:column;gap:6px}
+.unidades>p{margin:0;font-size:12.5px;color:var(--mut)}
+a.kpi{text-decoration:none;color:inherit;cursor:pointer;border:0;position:relative}
+a.kpi:hover{background:var(--chip)}
+a.kpi .ir{color:var(--accent);font-weight:600;font-size:12.5px}
+.kpis.k6{grid-template-columns:repeat(auto-fit,minmax(175px,1fr))}
+.voltar{color:var(--accent);font-weight:600;text-decoration:none}
+.pill{display:inline-block;padding:1px 8px;font-size:11.5px;border:1px solid currentColor;white-space:nowrap}
+.aviso{border:1px solid var(--vc);background:color-mix(in srgb,var(--vc) 12%,var(--card));padding:10px 14px;font-size:13px}
+/* calendário */
+.calnav{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.calnav b{font-family:var(--cond);font-size:18px;min-width:150px;text-align:center}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));border-left:1px solid var(--line);border-top:1px solid var(--line);background:var(--card)}
+.cal>div{border-right:1px solid var(--line);border-bottom:1px solid var(--line);min-height:92px;padding:4px;display:flex;flex-direction:column;gap:3px;min-width:0}
+.cal>.dow{min-height:0;background:var(--chip);font-size:11.5px;font-weight:600;text-align:center;padding:4px}
+.cal>.fora{background:var(--bg)}
+.cal .dia{font-family:var(--mono);font-size:11.5px;color:var(--mut)}
+.cal>.hoje .dia{color:var(--bg);background:var(--accent);align-self:flex-start;padding:0 5px}
+.cal>.fds{background:color-mix(in srgb,var(--chip) 45%,var(--card))}
+.vis{font-size:11px;line-height:1.3;padding:1px 4px;border-left:3px solid hsl(var(--h) 60% 45%);background:hsl(var(--h) 60% 45% / .13);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.listaMes{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:4px 24px;font-size:12.5px}
+.listaMes div{display:flex;gap:10px;border-bottom:1px solid var(--line);padding:3px 0}
+.listaMes span.num{flex:none;color:var(--mut)}
+@media (max-width:640px){.cal>div{min-height:58px;padding:2px}.vis{font-size:0;padding:0;height:6px;border-left-width:6px}}
+/* NFs */
+#tnf td,#tnf th{padding:4px 5px}
+#tnf td:first-child{min-width:190px;white-space:normal}
+.nfc{display:block;width:100%;min-width:74px;text-align:center;font-size:11.5px;line-height:1.3;padding:4px 3px;border:1px solid var(--line);background:var(--card);color:var(--fg);font-family:var(--mono)}
+.nfc.emitida{background:color-mix(in srgb,var(--ok) 16%,var(--card));border-color:var(--ok)}
+.nfc.diferente{background:color-mix(in srgb,var(--open) 20%,var(--card));border-color:var(--open)}
+.nfc.pendente{border:1px solid var(--lost);color:var(--lost)}
+.nfc.prevista{border-style:dashed;color:var(--mut)}
+.nfc.fora{border-color:transparent;color:var(--mut);background:transparent}
+.nfc.sel{outline:2px solid var(--accent);outline-offset:1px}
+.leg{display:flex;flex-wrap:wrap;gap:10px;font-size:12px;color:var(--mut);align-items:center}
+.leg .nfc{display:inline-block;width:auto;min-width:0;padding:1px 8px}
+#nfPainel{max-width:none}
+#nfPainel table td,#nfPainel table th{padding:5px 8px}
 </style>
 </head>
 <body>
@@ -133,8 +175,9 @@ details summary{cursor:pointer;font-weight:600}
 </section>
 
 <section>
-<div><h2>Grupos com várias unidades</h2><p class="sub">Soma dos CNPJs com a mesma raiz. Útil para redes em que uma unidade fecha e outra não.</p></div>
+<div><h2>Grupos com várias unidades</h2><p class="sub">Soma dos CNPJs com a mesma raiz. Útil para redes em que uma unidade fecha e outra não. Clique num grupo para ver cada CNPJ; clique num CNPJ para ver as propostas dele.</p></div>
 <div class="tw"><table id="tg"><thead></thead><tbody></tbody></table></div>
+<button id="gmore" hidden style="align-self:flex-start">Mostrar mais 30</button>
 </section>
 
 <section>
@@ -147,6 +190,38 @@ details summary{cursor:pointer;font-weight:600}
 <h2>Critérios do rastreio</h2>
 <p class="sub" id="criterios"></p>
 </section>
+</div>
+</div>
+
+<div id="vContratos" hidden>
+<div class="wrap" style="padding:0">
+  <a href="#" class="voltar">← Voltar ao painel de orçamentos</a>
+  <div><h2 style="font-size:26px">Contratos e faturamento</h2>
+  <p class="sub">Lido das abas “Contratos”, “Controle agendamento contratos ativos” e “Controle NF Contratos”. As NFs lançadas aqui são gravadas na planilha.</p></div>
+  <div id="cAviso"></div>
+  <div class="kpis" id="ckpis"></div>
+
+  <section>
+  <div><h2>Contratos</h2><p class="sub">Situação calculada pelas datas de início e término. “Em renovação” vem da coluna Valor_Pgto_Vigente.</p></div>
+  <div class="tw"><table id="tct"></table></div>
+  </section>
+
+  <section>
+  <div><h2>Agenda de visitas</h2><p class="sub">Datas lidas do texto de cada mês na aba de agendamento. O que não é data (“atendendo”, “diversos”, “mandei mensagem”) aparece em Anotações do mês.</p></div>
+  <div class="calnav"><button id="calAnt" aria-label="Mês anterior">‹</button><b id="calTit"></b><button id="calProx" aria-label="Próximo mês">›</button><button id="calHoje">Mês atual</button></div>
+  <div class="cal" id="cal"></div>
+  <div><h3 style="font-size:14px;margin:4px 0" id="calListaTit"></h3><div class="listaMes" id="calLista"></div></div>
+  <div id="calNotas"></div>
+  <details><summary>Visão do ano como está na planilha</summary><div class="tw" style="margin-top:8px"><table id="tag"></table></div></details>
+  </section>
+
+  <section>
+  <div><h2>Emissão de NFs</h2><p class="sub" id="nfSub"></p></div>
+  <div class="calnav"><button id="nfAnt" aria-label="Ano anterior">‹</button><b id="nfTit"></b><button id="nfProx" aria-label="Próximo ano">›</button></div>
+  <div class="leg"><span class="nfc emitida">emitida</span><span class="nfc diferente">valor ≠ parcela</span><span class="nfc pendente">pendente</span><span class="nfc prevista">prevista</span><span class="nfc fora">–</span><span>fora da vigência</span></div>
+  <div class="tw"><table id="tnf"></table></div>
+  <div class="panel" id="nfPainel" hidden></div>
+  </section>
 </div>
 </div>
 </div>
@@ -384,7 +459,7 @@ function analisar(P, hoje, CFG) {
   };
   const C = [...porCk].map(([ck, x]) => { const c = agrega(x); c.id = ck; c.cnpj = ck.startsWith('N:') ? '' : ck; c.perfil = perfil(c); return c; });
   const porRaiz = new Map(); for (const q of Q) { if (!porRaiz.has(q.raiz)) porRaiz.set(q.raiz, []); porRaiz.get(q.raiz).push(q); }
-  const G = [...porRaiz].map(([raiz, x]) => { const g = agrega(x); g.raiz = raiz; g.un = new Set(x.map(q => q.ck)).size; g.nome = maisFrequente(x.map(q => q.nome)); return g; }).filter(g => g.un > 1).sort((x, y) => y.n - x.n);
+  const G = [...porRaiz].map(([raiz, x]) => { const g = agrega(x); g.raiz = raiz; g.cks = [...new Set(x.map(q => q.ck))]; g.un = g.cks.length; g.nome = maisFrequente(x.map(q => q.nome)); return g; }).filter(g => g.un > 1).sort((x, y) => y.n - x.n);
 
   /* ---------- cortes de conversão ---------- */
   const faixas = [[300, 'Até R$ 300'], [1000, 'R$ 300 a 1 mil'], [3000, 'R$ 1 a 3 mil'], [10000, 'R$ 3 a 10 mil'], [Infinity, 'Acima de R$ 10 mil']];
@@ -422,6 +497,155 @@ function analisar(P, hoje, CFG) {
   return { Q, C, G, S, cortes, dif, inc, porCk };
 }
 
+/* =====================================================================
+   CONTRATOS – vigência, agenda de visitas e emissão de NFs
+   Tudo é lido das abas "Contratos", "Controle agendamento contratos ativos"
+   e "Controle NF Contratos" a cada carga da página.
+   ===================================================================== */
+function analisarContratos(P, hoje, CFG) {
+  const money = s => {
+    s = String(s == null ? '' : s).replace('R$', '').replace(/ /g, '').replace(/\s/g, '').trim();
+    if (!s || s === '-') return null;
+    const v = Number(s.replace(/\./g, '').replace(',', '.'));
+    return isFinite(v) ? v : null;
+  };
+  const norm = s => String(s || '').toUpperCase().normalize('NFKD').replace(/[^\x00-\x7F]/g, '').replace(/[^A-Z0-9]+/g, ' ').trim();
+  const col = (aba, titulo) => { const t = norm(titulo); const i = aba.cab.findIndex(h => norm(h) === t); return i < 0 ? -1 : i + 1; };
+  const cel = (r, i) => (i < 0 || r[i] == null) ? '' : String(r[i]).trim();
+  const hojeD = new Date(hoje), anoHoje = hojeD.getUTCFullYear(), mesHoje = hojeD.getUTCMonth() + 1;
+  const mesIdx = (a, m) => a * 12 + (m - 1);
+  const idxHoje = mesIdx(anoHoje, mesHoje);
+
+  /* ---------- datas de contrato: "02/2026", "01/09/2025", "2023", "renovado automaticamente"... ---------- */
+  const mesAno = s => {
+    s = String(s || '').trim();
+    let m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(s); if (m) return { a: +m[3], m: +m[2], d: +m[1] };
+    m = /^(\d{1,2})\/(\d{4})$/.exec(s); if (m) return { a: +m[2], m: +m[1], d: null };
+    m = /^(\d{4})$/.exec(s); if (m) return { a: +m[1], m: 1, d: null, soAno: true };
+    return null;
+  };
+  const fmtMA = x => x ? (x.d ? String(x.d).padStart(2, '0') + '/' : '') + String(x.m).padStart(2, '0') + '/' + x.a : '';
+
+  /* ---------- aba Contratos ---------- */
+  const ct = P.contratos || { cab: [], linhas: [] };
+  const c = {}; ['Cliente', 'Data de Inicio', 'Data de Termino', 'Valor', 'Periodicidade de Visitas', 'Forma_Pgto', 'Valor_Pgto_Vigente', 'Caminho_Pasta'].forEach(k => c[k] = col(ct, k));
+  const contratos = ct.linhas.map((r, i) => {
+    const nome = cel(r, c['Cliente']); if (!nome) return null;
+    const iniTxt = cel(r, c['Data de Inicio']), fimTxt = cel(r, c['Data de Termino']), forma = cel(r, c['Forma_Pgto']), pgtoTxt = cel(r, c['Valor_Pgto_Vigente']);
+    const ini = mesAno(iniTxt), fim = mesAno(fimTxt), valor = money(cel(r, c['Valor']));
+    const renova = /renova/i.test(fimTxt), emRenov = /renova/i.test(pgtoTxt), finalizado = /finaliz/i.test(pgtoTxt + ' ' + forma);
+    let parcela = money(pgtoTxt);
+    if (parcela == null && valor != null && /^12\s*x$/i.test(forma)) parcela = Math.round(valor / 12 * 100) / 100;
+    let situacao;
+    if (finalizado) situacao = 'Encerrado';
+    else if (!ini && !fim && !renova) situacao = 'Sem vigência informada';
+    else if (fim && mesIdx(fim.a, fim.m) < idxHoje) situacao = emRenov ? 'Em renovação' : 'Vencido';
+    else if (emRenov) situacao = 'Em renovação';
+    else situacao = 'Vigente';
+    const vigente = situacao === 'Vigente' || situacao === 'Em renovação';
+    // meses em que se espera NF: do início ao término (sem término e com renovação automática: sem limite)
+    const iniIdx = ini ? mesIdx(ini.a, ini.m) : null, fimIdx = fim ? mesIdx(fim.a, fim.m) : (renova ? Infinity : null);
+    const esperaNF = (a, m) => { if (situacao === 'Sem vigência informada' || iniIdx == null || fimIdx == null) return false; const k = mesIdx(a, m); if (situacao === 'Encerrado' && fim == null) return false; return k >= iniIdx && k <= fimIdx; };
+    return { i, linha: r[0], nome, iniTxt, fimTxt, ini: fmtMA(ini) || iniTxt, fim: fmtMA(fim) || fimTxt, valor, forma, pgtoTxt, parcela, periodicidade: cel(r, c['Periodicidade de Visitas']), pasta: cel(r, c['Caminho_Pasta']), situacao, vigente, esperaNF };
+  }).filter(Boolean);
+  contratos.forEach((k, j) => k.cor = Math.round((j * 137.508) % 360));
+
+  /* ---------- casar nomes entre abas ("Hospital Santa Lucinda" x "SANTA LUCINDA") ---------- */
+  const VAZIAS = new Set(['HOSPITAL', 'DE', 'DA', 'DO', 'DOS', 'DAS', 'E', 'SAO', 'SANTA', 'CASA', 'INSTITUTO', 'CENTRO', 'LTDA', 'SA']);
+  const casar = nome => {
+    const n = norm(nome); if (!n) return null;
+    let k = contratos.find(x => norm(x.nome) === n); if (k) return k;
+    k = contratos.find(x => { const m = norm(x.nome); return m.includes(n) || n.includes(m); }); if (k) return k;
+    const t = n.split(' ').filter(w => w.length > 3 && !VAZIAS.has(w)); let best = null, bn = 0;
+    for (const x of contratos) { const tx = new Set(norm(x.nome).split(' ')); const s = t.filter(w => tx.has(w)).length; if (s > bn) { bn = s; best = x; } }
+    return bn > 0 ? best : null;
+  };
+
+  /* ---------- agenda: texto livre de cada mês -> dias de visita ---------- */
+  const MESES = ['JANEIRO', 'FEVEREIRO', 'MARCO', 'ABRIL', 'MAIO', 'JUNHO', 'JULHO', 'AGOSTO', 'SETEMBRO', 'OUTUBRO', 'NOVEMBRO', 'DEZEMBRO'];
+  const diasNoMes = (a, m) => new Date(Date.UTC(a, m, 0)).getUTCDate();
+  // Lê "05/01 a 06/01; 09/01 e 30/01", "11, 13 e 14/08", "3 a 6, 17, 18 e 21", "14 a 17/09", "04/05/2026 e 18/05 à 22/05"
+  function lerVisitas(txt, mCol, ano) {
+    let s = String(txt || '').trim(); const notas = [];
+    if (!s || /^[-–\s]+$/.test(s)) return { datas: [], nota: '' };
+    s = s.replace(/\(([^)]*)\)/g, (_, x) => { notas.push(x.trim()); return ' '; });
+    const partes = s.split(/\s*[;,]\s*|\s+e\s+/i).map(p => p.trim()).filter(Boolean);
+    const itens = [];
+    for (const p of partes) {
+      const m = /^(\d{1,2})(?:\/(\d{1,2}))?(?:\/(\d{2,4}))?(?:\s*(?:a|à|ate|até|-|–)\s*(\d{1,2})(?:\/(\d{1,2}))?(?:\/(\d{2,4}))?)?\.?$/i.exec(p);
+      if (!m) { notas.push(p); continue; }
+      itens.push({ d1: +m[1], m1: m[2] ? +m[2] : null, d2: m[4] ? +m[4] : null, m2: m[5] ? +m[5] : null });
+    }
+    // dia sem mês herda o mês do próximo item que tiver mês; se nenhum tiver, o mês da coluna
+    let prox = null;
+    for (let i = itens.length - 1; i >= 0; i--) {
+      const it = itens[i]; if (it.m2 == null && it.d2 != null) it.m2 = it.m1 != null ? it.m1 : prox;
+      if (it.m1 == null) it.m1 = it.d2 != null ? it.m2 : prox; if (it.m1 != null) prox = it.m1;
+    }
+    const datas = [], ok = (m, d) => m >= 1 && m <= 12 && d >= 1 && d <= diasNoMes(ano, m);
+    for (const it of itens) {
+      const m1 = it.m1 || mCol, m2 = it.m2 || m1;
+      if (!ok(m1, it.d1)) { notas.push(String(it.d1)); continue; }
+      if (it.d2 == null) { datas.push(Date.UTC(ano, m1 - 1, it.d1)); continue; }
+      if (!ok(m2, it.d2)) { datas.push(Date.UTC(ano, m1 - 1, it.d1)); continue; }
+      const t1 = Date.UTC(ano, m1 - 1, it.d1), t2 = Date.UTC(ano, m2 - 1, it.d2);
+      if (t2 >= t1 && (t2 - t1) / 86400000 <= 31) for (let t = t1; t <= t2; t += 86400000) datas.push(t);
+      else { datas.push(t1); datas.push(t2); }     // intervalo absurdo (ex.: 19/02 - 20/04): marca só as duas pontas
+    }
+    return { datas, nota: notas.join(' · ') };
+  }
+  const ag = P.agenda || { cab: [], linhas: [] }, aCli = col(ag, 'Cliente'), aPer = col(ag, 'Periodicidade');
+  const aMes = MESES.map(m => col(ag, m));
+  const anoAgenda = CFG.ANO;
+  const agenda = ag.linhas.map(r => {
+    const nome = cel(r, aCli); if (!nome) return null;
+    const k = casar(nome);
+    const meses = aMes.map((ci, j) => { const txt = cel(r, ci); const v = lerVisitas(txt, j + 1, anoAgenda); return { txt, datas: v.datas, nota: v.nota }; });
+    return { linha: r[0], nome, periodicidade: cel(r, aPer), contrato: k ? k.nome : '', cor: k ? k.cor : 0, meses };
+  }).filter(Boolean);
+  const visitas = [];   // {t, nome, contrato, cor, txt}
+  for (const a of agenda) a.meses.forEach((m, j) => { for (const t of m.datas) visitas.push({ t, nome: a.contrato || a.nome, cor: a.cor, txt: m.txt, mesCol: j + 1 }); });
+  // a mesma data pode aparecer duas vezes no texto: fica uma
+  const vis = new Map(); for (const v of visitas) vis.set(v.t + '|' + v.nome, v);
+
+  /* ---------- NFs ---------- */
+  const nf = P.nfs || { cab: [], linhas: [] }, n = {};
+  ['ID', 'Contrato', 'Mês referência', 'Nº NF', 'Data emissão', 'Valor NF', 'Observação', 'Registrado por', 'Registrado em'].forEach(k => n[k] = col(nf, k));
+  const nfs = nf.linhas.map(r => {
+    const id = cel(r, n['ID']); if (!id) return null;
+    const mr = /^(\d{4})-(\d{1,2})$/.exec(cel(r, n['Mês referência'])) || /^(\d{1,2})\/(\d{4})$/.exec(cel(r, n['Mês referência']));
+    let a = null, m = null; if (mr) { if (mr[1].length === 4) { a = +mr[1]; m = +mr[2]; } else { a = +mr[2]; m = +mr[1]; } }
+    return { id, linha: r[0], contrato: cel(r, n['Contrato']), a, m, numero: cel(r, n['Nº NF']), data: cel(r, n['Data emissão']), valor: money(cel(r, n['Valor NF'])) || 0, obs: cel(r, n['Observação']), por: cel(r, n['Registrado por']), em: cel(r, n['Registrado em']) };
+  }).filter(Boolean);
+  const porCelula = {}; for (const x of nfs) (porCelula[x.contrato + '|' + x.a + '|' + x.m] = porCelula[x.contrato + '|' + x.a + '|' + x.m] || []).push(x);
+  const semContrato = nfs.filter(x => !contratos.some(k => k.nome === x.contrato));
+
+  // situação de cada contrato × mês num ano
+  function grade(ano) {
+    return contratos.map(k => {
+      const meses = []; let fat = 0, prev = 0, pend = 0;
+      for (let m = 1; m <= 12; m++) {
+        const lista = porCelula[k.nome + '|' + ano + '|' + m] || [], soma = lista.reduce((s, x) => s + x.valor, 0), espera = k.esperaNF(ano, m), passado = mesIdx(ano, m) <= idxHoje;
+        let st = lista.length ? 'emitida' : !espera ? 'fora' : passado ? 'pendente' : 'prevista';
+        if (lista.length && k.parcela && Math.abs(soma - k.parcela) > 0.01) st = 'diferente';
+        fat += soma; if (espera && k.parcela) prev += k.parcela; if (st === 'pendente') pend++;
+        meses.push({ m, st, lista, soma, espera });
+      }
+      return { k, meses, fat, prev, pend };
+    });
+  }
+  const anoRef = CFG.ANO;
+  const fatAno = nfs.filter(x => x.a === anoRef).reduce((s, x) => s + x.valor, 0);
+  const vigentes = contratos.filter(k => k.vigente);
+  const g = grade(anoRef);
+  return {
+    contratos, agenda, visitas: [...vis.values()], nfs, grade, semContrato, lerVisitas,
+    resumo: { anoRef, nVig: vigentes.length, valorVig: vigentes.reduce((s, k) => s + (k.valor || 0), 0), fatAno, nfsAno: nfs.filter(x => x.a === anoRef).length,
+      prevAteHoje: g.reduce((s, r) => s + r.meses.filter(x => x.espera && mesIdx(anoRef, x.m) <= idxHoje).reduce((t) => t + (r.k.parcela || 0), 0), 0),
+      pendentes: g.reduce((s, r) => s + r.pend, 0) }
+  };
+}
+
 
 /* =====================================================================
    TELA
@@ -438,15 +662,17 @@ const guarda = { get(k) { try { return localStorage.getItem('orc.' + k) || ''; }
 // Conexão: 1º o que veio no endereço (?api=...&chave=...), 2º o que está guardado no navegador, 3º o CFG.
 const qs = new URLSearchParams(location.search);
 const con = { url: qs.get('api') || guarda.get('url') || CFG.API_URL || '', chave: qs.get('chave') || guarda.get('chave') || '', quem: guarda.get('quem') };
-let R = null, P = null, carregando = false;
-const st = { p: 'Todos', q: '', k: 'v', dir: -1, lim: 50, open: null, edit: null, msg: null };
+let R = null, P = null, RC = null, HOJE = null, carregando = false;
+const st = { p: 'Todos', q: '', k: 'v', dir: -1, lim: 50, open: null, edit: null, msg: null,
+  gOpen: null, gUnit: null, glim: 30,                       // grupos: grupo aberto, CNPJ aberto dentro dele
+  calA: CFG.ANO, calM: null, nfA: CFG.ANO, nf: null };      // contratos: mês do calendário, ano das NFs, célula de NF aberta
 
 function estado(tipo, texto) { $('#led').className = 'led ' + tipo; $('#sync').textContent = texto; }
 
 async function carregar(silencioso) {
   if (carregando) return;
   if (!con.url || !con.chave) { abrirConfig('Informe o endereço do App da Web e a chave para carregar os dados.'); return; }
-  if (silencioso && st.edit) return;            // não atualiza por baixo de quem está editando
+  if (silencioso && (st.edit || st.nf)) return;  // não atualiza por baixo de quem está editando
   carregando = true; estado('busy', 'Lendo a planilha…'); $('#bAtualizar').disabled = true;
   try {
     const r = await fetch(con.url + (con.url.includes('?') ? '&' : '?') + 'chave=' + encodeURIComponent(con.chave) + '&t=' + Date.now(), { redirect: 'follow' });
@@ -454,10 +680,12 @@ async function carregar(silencioso) {
     const j = await r.json();
     if (!j.ok) throw new Error(j.erro || 'Não foi possível ler a planilha.');
     const agora = new Date();
-    P = j; R = analisar(j, Date.UTC(agora.getFullYear(), agora.getMonth(), agora.getDate()), CFG);
+    const hojeUTC = Date.UTC(agora.getFullYear(), agora.getMonth(), agora.getDate());
+    P = j; R = analisar(j, hojeUTC, CFG); RC = analisarContratos(j, hojeUTC, CFG); HOJE = hojeUTC;
+    R.Cmap = new Map(R.C.map(c => [c.id, c]));
     $('#fonte').textContent = 'Fonte: ' + j.planilha + '. Página aberta ' + (j.podeEditar ? 'com permissão de edição.' : 'somente para leitura.');
     estado('ok', 'Planilha lida em ' + j.atualizado + ' · relê a cada ' + CFG.ATUALIZAR_A_CADA_MIN + ' min');
-    $('#config').hidden = true; $('#app').hidden = false; pintar();
+    $('#config').hidden = true; rota();
   } catch (e) {
     const m = (e instanceof TypeError) ? 'Não consegui falar com a planilha. Confira o endereço do App da Web e se a implantação está como "Qualquer pessoa".' : e.message;
     estado('err', m); if (!R) abrirConfig(m, true);
@@ -489,8 +717,11 @@ function pintar() {
   const S = R.S, D = CFG.DIAS_FRIO;
   const G = [['Aprovado', '--ok', S.aprov, 'aprovado na planilha'], ['Recuperado', '--rec', S.rec, 'saiu em outra OS ou em contrato'], ['Duplicado', '--dup', S.dup, 'mesmo orçamento enviado de novo'], ['Verificar contrato', '--vc', S.vc, 'cliente com contrato, conferir'], ['Perdido', '--lost', S.perd, 'sem aprovação equivalente'], ['Cancelado', '--canc', S.cancl, 'cancelado sem equivalente'], ['Em aberto há mais de ' + D + ' dias', '--open', S.frio, 'aguardando, provavelmente frio'], ['Em aberto até ' + D + ' dias', '--open2', S.quente, 'aguardando, ainda quente']];
   const tot = S.total.v || 1;
+  const RS = RC.resumo;
+  $('#kpis').className = 'kpis k6';
   $('#kpis').innerHTML = [[brl0(S.total.v), S.total.n + ' orçamentos para ' + S.clientes + ' clientes', ''], [brl0(S.aprov.v), S.aprov.n + ' aprovados · ' + pct(S.aprov.v / tot) + ' do valor orçado', '--ok'], [brl0(S.perd.v), S.perd.n + ' perdidos depois do rastreio', '--lost'], [brl0(S.frio.v), S.frio.n + ' aguardando há mais de ' + D + ' dias', '--open'], [brl0(S.rec.v), S.rec.n + ' não aprovados que saíram por outro caminho', '--rec']]
-    .map(k => `<div class="kpi"><b>${k[0]}</b><span>${k[2] ? `<i style="background:var(${k[2]})"></i>` : ''}${k[1]}</span></div>`).join('');
+    .map(k => `<div class="kpi"><b>${k[0]}</b><span>${k[2] ? `<i style="background:var(${k[2]})"></i>` : ''}${k[1]}</span></div>`).join('')
+    + `<a class="kpi" href="#contratos" title="Abrir contratos, agenda e NFs"><b>${brl0(RS.fatAno)}</b><span>${RS.nVig} contratos vigentes · faturado em ${RS.anoRef} (${RS.nfsAno} NFs)</span><span class="ir">Contratos, agenda e NFs →</span></a>`;
   $('#band').innerHTML = G.map(g => `<div title="${g[0]}: ${brl0(g[2].v)}" style="background:var(${g[1]});flex:${g[2].v}"></div>`).join('');
   $('#legend').innerHTML = G.map(g => `<div><i style="background:var(${g[1]})"></i><span>${g[0]}<br><em>${g[3]}</em></span><span class="num" style="text-align:right;flex:none">${brl0(g[2].v)}<br><em>${g[2].n} orç. · ${pct(g[2].v / tot)}</em></span></div>`).join('');
 
@@ -513,12 +744,10 @@ function pintar() {
     return `<div class="cut"><h3>${t}</h3>${a.map(c => `<div class="row"><span class="lab" title="${esc(c.k)}">${esc(k === 'mes' ? c.k.slice(5) + '/' + c.k.slice(0, 4) : c.k)} <small>${c.n}</small></span><div class="bar"><div style="width:${(c.conv || 0) * 100}%"></div></div><span class="num">${pct(c.conv)}</span></div>`).join('')}${k === 'mes' ? '<p class="muted" style="font-size:12px;margin:6px 0 0">Meses recentes parecem converter mais enquanto os não aprovados ainda estão como aguardando.</p>' : ''}</div>`; }).join('');
 
   $('#dicaEdicao').textContent = P.podeEditar ? 'Use "Editar" na linha do orçamento para alterar valor, status, data de aprovação ou observação direto na planilha.' : '';
-  chips(); tabela();
-  $('#tg thead').innerHTML = '<tr><th>Grupo</th><th>Unidades</th><th>Orç.</th><th>Orçado</th><th>Aprov.</th><th>Valor aprovado</th><th>Não aprov.</th><th>Canc.</th><th>Aguard.</th><th>Perdido</th><th>Conversão</th></tr>';
-  $('#tg tbody').innerHTML = R.G.slice(0, 30).map(g => `<tr><td>${esc(g.nome)}</td><td class="num">${g.un}</td><td class="num">${g.n}</td><td class="num">${brl0(g.v)}</td><td class="num">${g.na}</td><td class="num">${brl0(g.va)}</td><td class="num">${g.nn}</td><td class="num">${g.nc}</td><td class="num">${g.ng}</td><td class="num">${brl0(g.vp)}</td><td class="num">${pct(g.conv)}</td></tr>`).join('');
+  chips(); tabela(); grupos();
   $('#sDif').textContent = 'Orçado × fechado: ' + R.dif.length + ' OS aprovadas com valor diferente na aba Aprovados';
   $('#tdif thead').innerHTML = '<tr><th>OS</th><th class="l">Cliente</th><th>Orçado</th><th>Fechado</th><th>Diferença</th><th class="l">Observação</th></tr>';
-  $('#tdif tbody').innerHTML = R.dif.map(d => `<tr><td class="num">${esc(d.os)}</td><td class="l" style="white-space:normal">${esc(d.nome)}</td><td class="num">${brl2(d.valor)}</td><td class="num">${brl2(d.fechado)}</td><td class="num">${brl2(d.dif)}</td><td class="l" style="white-space:normal">${esc(/^[XY]:/.test(d.obs) ? '' : d.obs)}</td></tr>`).join('');
+  $('#tdif tbody').innerHTML = R.dif.map(d => `<tr><td class="num">${esc(d.os)}</td><td class="l" style="white-space:normal">${esc(d.nome)}</td><td class="num">${brl2(d.valor)}</td><td class="num">${brl2(d.fechado)}</td><td class="num">${brl2(d.dif)}</td><td class="l" style="white-space:normal">${esc(/^[XY]:/i.test(d.obs) ? '' : d.obs)}</td></tr>`).join('');
   $('#sInc').textContent = 'Inconsistências entre as abas: ' + R.inc.length;
   $('#tinc thead').innerHTML = '<tr><th>OS</th><th class="l">Cliente</th><th>Valor</th><th class="l">O que conferir</th></tr>';
   $('#tinc tbody').innerHTML = R.inc.map(d => `<tr><td class="num">${esc(d.os)}</td><td class="l" style="white-space:normal">${esc(d.nome)}</td><td class="num">${brl2(d.valor)}</td><td class="l" style="white-space:normal">${esc(d.problema)}</td></tr>`).join('');
@@ -534,15 +763,35 @@ function tabela() {
   const sm = k => a.reduce((s, c) => s + c[k], 0);
   $('#count').textContent = a.length + ' clientes · ' + brl0(sm('v')) + ' orçados · ' + brl0(sm('va')) + ' aprovados · ' + brl0(sm('vp')) + ' perdidos';
   $('#tc thead').innerHTML = '<tr>' + COLS.map(c => `<th data-k="${c[0]}">${c[1]}${st.k === c[0] ? (st.dir < 0 ? ' ↓' : ' ↑') : ''}</th>`).join('') + '</tr>';
-  $('#tc tbody').innerHTML = a.slice(0, st.lim).map(c => `<tr class="c" tabindex="0" data-id="${esc(c.id)}"><td>${esc(c.nome)}<br><span class="muted num" style="font-size:11.5px">${fmtCnpj(c.cnpj)} · ${esc(c.perfil)}</span></td><td class="num">${c.n}</td><td class="num">${brl0(c.v)}</td><td class="num">${c.na}</td><td class="num">${brl0(c.va)}</td><td class="num">${c.nn}</td><td class="num">${c.nc}</td><td class="num">${c.ng}</td><td class="num">${brl0(c.vg)}</td><td class="num">${brl0(c.vp)}</td><td class="num">${brl0(c.vr)}</td><td class="num">${pct(c.conv)}</td></tr>` + (st.open === c.id ? detalhe(c) : '')).join('');
+  $('#tc tbody').innerHTML = a.slice(0, st.lim).map(c => linhaCliente(c, st.open === c.id)).join('');
   $('#more').hidden = a.length <= st.lim;
 }
+
+function linhaCliente(c, aberto) {
+  return `<tr class="c" tabindex="0" data-id="${esc(c.id)}"><td><span class="chev">${aberto ? '▾' : '▸'}</span>${esc(c.nome)}<br><span class="muted num" style="font-size:11.5px">${fmtCnpj(c.cnpj)} · ${esc(c.perfil)}</span></td><td class="num">${c.n}</td><td class="num">${brl0(c.v)}</td><td class="num">${c.na}</td><td class="num">${brl0(c.va)}</td><td class="num">${c.nn}</td><td class="num">${c.nc}</td><td class="num">${c.ng}</td><td class="num">${brl0(c.vg)}</td><td class="num">${brl0(c.vp)}</td><td class="num">${brl0(c.vr)}</td><td class="num">${pct(c.conv)}</td></tr>` + (aberto ? detalhe(c) : '');
+}
+
+/* Grupos: a linha abre a lista de CNPJs do grupo; cada CNPJ abre as propostas dele */
+function grupos() {
+  $('#tg thead').innerHTML = '<tr><th>Grupo</th><th>Unidades</th><th>Orç.</th><th>Orçado</th><th>Aprov.</th><th>Valor aprovado</th><th>Não aprov.</th><th>Canc.</th><th>Aguard.</th><th>Perdido</th><th>Conversão</th></tr>';
+  $('#tg tbody').innerHTML = R.G.slice(0, st.glim).map(g => {
+    const aberto = st.gOpen === g.raiz;
+    let h = `<tr class="g${aberto ? ' aberto' : ''}" tabindex="0" data-raiz="${esc(g.raiz)}" aria-expanded="${aberto}"><td><span class="chev">${aberto ? '▾' : '▸'}</span>${esc(g.nome)}<br><span class="muted num" style="font-size:11.5px;font-weight:400">raiz ${esc(g.raiz)}</span></td><td class="num">${g.un}</td><td class="num">${g.n}</td><td class="num">${brl0(g.v)}</td><td class="num">${g.na}</td><td class="num">${brl0(g.va)}</td><td class="num">${g.nn}</td><td class="num">${g.nc}</td><td class="num">${g.ng}</td><td class="num">${brl0(g.vp)}</td><td class="num">${pct(g.conv)}</td></tr>`;
+    if (aberto) {
+      const un = g.cks.map(id => R.Cmap.get(id)).filter(Boolean).sort((x, y) => y.v - x.v);
+      h += `<tr class="d"><td colspan="11"><div class="unidades"><p>${un.length} CNPJs de ${esc(g.nome)}. Clique num CNPJ para ver as propostas.</p><div class="tw"><table><thead><tr>${COLS.map(c => `<th>${c[1]}</th>`).join('')}</tr></thead><tbody>${un.map(c => linhaCliente(c, st.gUnit === c.id)).join('')}</tbody></table></div></div></td></tr>`;
+    }
+    return h;
+  }).join('');
+  $('#gmore').hidden = R.G.length <= st.glim;
+}
+function redesenhar() { tabela(); grupos(); }
 
 function detalhe(c) {
   const linhas = R.porCk.get(c.id).slice().sort((x, y) => (x.dataCriacao || 0) - (y.dataCriacao || 0)), ed = P.podeEditar;
   return `<tr class="d"><td colspan="${COLS.length}"><div style="overflow-x:auto"><table><thead><tr><th class="l">OS</th><th class="l">Criação</th><th>Valor orçado</th><th class="l">Status na planilha</th><th class="l">Situação apurada</th><th class="l">Rastreio</th>${ed ? '<th></th>' : ''}</tr></thead><tbody>${linhas.map(q => {
     const k = q.linha + '|' + q.os;
-    return `<tr><td class="l num">${esc(q.os)}</td><td class="l num">${fmtD(q.dataCriacao)}</td><td class="num">${brl2(q.valor)}${q.valorFechado != null && Math.abs(q.valorFechado - q.valor) > 0.01 && q.status === 'APROVADO' ? `<br><span class="muted">fechado ${brl2(q.valorFechado)}</span>` : ''}</td><td class="l">${esc(q.status)}${q.dataAprov != null ? ' em ' + fmtD(q.dataAprov) : ''}<br><span class="muted">${esc(q.origem)}${q.diasAberto != null ? ' · ' + q.diasAberto + ' dias em aberto' : ''}</span></td><td class="l"><span class="dot" style="background:var(${COR[q.grupo]})"></span>${esc(q.grupo)}</td><td class="l" style="white-space:normal;min-width:260px">${esc(q.rastreio)}${q.detalhe ? `<br><span class="muted">${esc(q.detalhe)}${q.confianca ? ' · confiança ' + q.confianca.toLowerCase() : ''}</span>` : ''}${q.obs && q.obs !== q.detalhe && !/^[XY]:/.test(q.obs) ? `<br><span class="muted">Obs.: ${esc(q.obs)}</span>` : ''}</td>${ed ? `<td><button data-edit="${esc(k)}">Editar</button></td>` : ''}</tr>` + (st.edit === k ? formEdicao(q) : '');
+    return `<tr><td class="l num">${esc(q.os)}</td><td class="l num">${fmtD(q.dataCriacao)}</td><td class="num">${brl2(q.valor)}${q.valorFechado != null && Math.abs(q.valorFechado - q.valor) > 0.01 && q.status === 'APROVADO' ? `<br><span class="muted">fechado ${brl2(q.valorFechado)}</span>` : ''}</td><td class="l">${esc(q.status)}${q.dataAprov != null ? ' em ' + fmtD(q.dataAprov) : ''}<br><span class="muted">${esc(q.origem)}${q.diasAberto != null ? ' · ' + q.diasAberto + ' dias em aberto' : ''}</span></td><td class="l"><span class="dot" style="background:var(${COR[q.grupo]})"></span>${esc(q.grupo)}</td><td class="l" style="white-space:normal;min-width:260px">${esc(q.rastreio)}${q.detalhe ? `<br><span class="muted">${esc(q.detalhe)}${q.confianca ? ' · confiança ' + q.confianca.toLowerCase() : ''}</span>` : ''}${q.obs && q.obs !== q.detalhe && !/^[XY]:/i.test(q.obs) ? `<br><span class="muted">Obs.: ${esc(q.obs)}</span>` : ''}</td>${ed ? `<td><button data-edit="${esc(k)}">Editar</button></td>` : ''}</tr>` + (st.edit === k ? formEdicao(q) : '');
   }).join('')}</tbody></table></div></td></tr>`;
 }
 
@@ -560,14 +809,14 @@ function formEdicao(q) {
 async function gravar(form) {
   const [linha, os] = form.dataset.form.split('|'), q = R.Q.find(x => String(x.linha) === linha && x.os === os), f = new FormData(form), campos = {};
   const vTxt = String(f.get('valor')).replace(/R\$/g, '').replace(/\s/g, ''), v = Number(vTxt.includes(',') ? vTxt.replace(/\./g, '').replace(',', '.') : vTxt);
-  if (!isFinite(v) || v < 0 || vTxt === '') { st.msg = { erro: true, texto: 'Valor inválido. Use o formato 1500,00.' }; return tabela(); }
+  if (!isFinite(v) || v < 0 || vTxt === '') { st.msg = { erro: true, texto: 'Valor inválido. Use o formato 1500,00.' }; return redesenhar(); }
   const dt = String(f.get('dataAprovacao')).trim(), obs = String(f.get('obs')).trim(), status = String(f.get('status'));
-  if (dt && !/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(dt)) { st.msg = { erro: true, texto: 'Data inválida. Use dd/mm/aaaa.' }; return tabela(); }
+  if (dt && !/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(dt)) { st.msg = { erro: true, texto: 'Data inválida. Use dd/mm/aaaa.' }; return redesenhar(); }
   if (Math.abs(v - q.valor) > 0.004) campos.valor = Math.round(v * 100) / 100;
   if (status !== q.status) campos.status = status;
   if (dt !== fmtD(q.dataAprov)) campos.dataAprovacao = dt;
   if (obs !== q.obs) campos.obs = obs;
-  if (!Object.keys(campos).length) { st.msg = { erro: true, texto: 'Nada foi alterado.' }; return tabela(); }
+  if (!Object.keys(campos).length) { st.msg = { erro: true, texto: 'Nada foi alterado.' }; return redesenhar(); }
   form.querySelectorAll('button,input,select,textarea').forEach(b => b.disabled = true);
   try {
     // text/plain evita a checagem prévia (CORS) que o Apps Script não responde
@@ -575,21 +824,180 @@ async function gravar(form) {
     const j = await r.json();
     if (!j.ok) throw new Error(j.erro || 'A planilha recusou a alteração.');
     st.edit = null; st.msg = null; estado('busy', 'Alteração gravada. Relendo a planilha…'); await carregar();
-  } catch (e) { st.msg = { erro: true, texto: (e instanceof TypeError) ? 'Sem resposta da planilha. Confira antes de tentar de novo: a alteração pode ter sido gravada.' : e.message }; tabela(); }
+  } catch (e) { st.msg = { erro: true, texto: (e instanceof TypeError) ? 'Sem resposta da planilha. Confira antes de tentar de novo: a alteração pode ter sido gravada.' : e.message }; redesenhar(); }
 }
 
 $('#chips').onclick = e => { const b = e.target.closest('button'); if (!b) return; st.p = b.dataset.p; st.lim = 50; chips(); tabela(); };
 $('#q').oninput = e => { st.q = e.target.value; st.lim = 50; tabela(); };
 $('#tc thead').onclick = e => { const t = e.target.closest('th'); if (!t) return; const k = t.dataset.k; if (st.k === k) st.dir *= -1; else { st.k = k; st.dir = k === 'nome' ? 1 : -1; } tabela(); };
-$('#tc tbody').onclick = e => {
-  const ed = e.target.closest('[data-edit]'); if (ed) { st.edit = st.edit === ed.dataset.edit ? null : ed.dataset.edit; st.msg = null; return tabela(); }
-  if (e.target.closest('[data-cancel]')) { st.edit = null; st.msg = null; return tabela(); }
-  if (e.target.closest('tr.d')) return;
-  const r = e.target.closest('tr.c'); if (!r) return; st.open = st.open === r.dataset.id ? null : r.dataset.id; st.edit = null; tabela();
-};
-$('#tc tbody').onkeydown = e => { if (e.key === 'Enter' && e.target.matches('tr.c')) { st.open = st.open === e.target.dataset.id ? null : e.target.dataset.id; st.edit = null; tabela(); } };
-$('#tc tbody').addEventListener('submit', e => { e.preventDefault(); gravar(e.target); });
+function alternar(tr) {
+  if (tr.classList.contains('g')) { st.gOpen = st.gOpen === tr.dataset.raiz ? null : tr.dataset.raiz; st.gUnit = null; st.edit = null; return grupos(); }
+  if (!tr.classList.contains('c')) return;
+  if (tr.closest('#tg')) st.gUnit = st.gUnit === tr.dataset.id ? null : tr.dataset.id; else st.open = st.open === tr.dataset.id ? null : tr.dataset.id;
+  st.edit = null; redesenhar();
+}
+for (const sel of ['#tc tbody', '#tg tbody']) {
+  const el = $(sel);
+  el.onclick = e => {
+    const ed = e.target.closest('[data-edit]'); if (ed) { st.edit = st.edit === ed.dataset.edit ? null : ed.dataset.edit; st.msg = null; return redesenhar(); }
+    if (e.target.closest('[data-cancel]')) { st.edit = null; st.msg = null; return redesenhar(); }
+    if (e.target.closest('form')) return;
+    const tr = e.target.closest('tr'); if (tr) alternar(tr);
+  };
+  el.onkeydown = e => { if (e.key === 'Enter' && e.target.matches('tr.c,tr.g')) alternar(e.target); };
+  el.addEventListener('submit', e => { e.preventDefault(); gravar(e.target); });
+}
 $('#more').onclick = () => { st.lim += 50; tabela(); };
+$('#gmore').onclick = () => { st.glim += 30; grupos(); };
+
+/* =====================================================================
+   PÁGINA DE CONTRATOS (#contratos)
+   ===================================================================== */
+const MES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+const MES3 = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+const DOW = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+const COR_SIT = { 'Vigente': '--ok', 'Em renovação': '--open', 'Vencido': '--lost', 'Encerrado': '--dup', 'Sem vigência informada': '--vc' };
+const hojeD = () => new Date(HOJE);
+
+function rota(rolarParaTopo) {
+  if (!R) return;
+  const c = location.hash === '#contratos';
+  $('#app').hidden = c; $('#vContratos').hidden = !c;
+  if (c) pintarContratos(); else pintar();
+  if (rolarParaTopo) window.scrollTo(0, 0);
+}
+window.addEventListener('hashchange', () => rota(true));
+
+function pintarContratos() {
+  const RS = RC.resumo, h = hojeD(), mh = h.getUTCMonth() + 1;
+  if (st.calM == null) { st.calA = h.getUTCFullYear(); st.calM = mh; }
+  $('#cAviso').innerHTML = (P.agenda === undefined || P.nfs === undefined) ? '<div class="aviso">A planilha não enviou a agenda e as NFs. Publique a versão nova do Apps Script (Implantar › Gerenciar implantações › Nova versão).</div>' : '';
+  const visMes = RC.visitas.filter(v => { const d = new Date(v.t); return d.getUTCFullYear() === h.getUTCFullYear() && d.getUTCMonth() + 1 === mh; });
+  $('#ckpis').innerHTML = [
+    [RS.nVig, 'contratos vigentes · ' + brl0(RS.valorVig) + ' por ano', '--ok'],
+    [brl0(RS.fatAno), 'faturado em ' + RS.anoRef + ' · ' + RS.nfsAno + ' NFs lançadas', '--accent'],
+    [brl0(RS.prevAteHoje), 'previsto pelas parcelas até ' + MES[mh - 1], ''],
+    [RS.pendentes, 'meses com NF pendente em ' + RS.anoRef, '--lost'],
+    [new Set(visMes.map(v => v.nome)).size, 'contratos com visita em ' + MES[mh - 1] + ' · ' + new Set(visMes.map(v => v.t)).size + ' dias', '--rec']
+  ].map(k => `<div class="kpi"><b>${k[0]}</b><span>${k[2] ? `<i style="background:var(${k[2]})"></i>` : ''}${k[1]}</span></div>`).join('');
+
+  // tabela de contratos
+  const g = RC.grade(RS.anoRef), gm = new Map(g.map(r => [r.k.nome, r]));
+  $('#tct').innerHTML = `<thead><tr><th>Contrato</th><th class="l">Situação</th><th class="l">Início</th><th class="l">Término</th><th>Valor</th><th class="l">Pagamento</th><th>Parcela</th><th class="l">Visitas</th><th>Faturado ${RS.anoRef}</th><th>NFs pendentes</th></tr></thead><tbody>` +
+    RC.contratos.map(k => { const r = gm.get(k.nome); return `<tr><td style="white-space:normal;min-width:220px"><span class="dot" style="background:hsl(${k.cor} 60% 45%)"></span>${esc(k.nome)}${k.pasta ? `<br><span class="muted num" style="font-size:11px;word-break:break-all">${esc(k.pasta)}</span>` : ''}</td><td class="l"><span class="pill" style="color:var(${COR_SIT[k.situacao]})">${esc(k.situacao)}</span></td><td class="l num">${esc(k.ini)}</td><td class="l" style="white-space:normal;max-width:160px">${esc(k.fim)}</td><td class="num">${k.valor != null ? brl2(k.valor) : esc('-')}</td><td class="l">${esc(k.forma)}</td><td class="num">${k.parcela != null ? brl2(k.parcela) : '<span class="muted">' + esc(k.pgtoTxt || '–') + '</span>'}</td><td class="l" style="white-space:normal;max-width:200px">${esc(k.periodicidade)}</td><td class="num">${brl2(r.fat)}</td><td class="num"${r.pend ? ' style="color:var(--lost)"' : ''}>${r.pend}</td></tr>`; }).join('') + '</tbody>';
+  calendario(); agendaAno(); gradeNF();
+}
+
+function calendario() {
+  const a = st.calA, m = st.calM, h = hojeD();
+  $('#calTit').textContent = MES[m - 1] + ' de ' + a;
+  const prim = new Date(Date.UTC(a, m - 1, 1)).getUTCDay(), nd = new Date(Date.UTC(a, m, 0)).getUTCDate();
+  const porDia = {};
+  for (const v of RC.visitas) { const d = new Date(v.t); if (d.getUTCFullYear() === a && d.getUTCMonth() + 1 === m) (porDia[d.getUTCDate()] = porDia[d.getUTCDate()] || []).push(v); }
+  let html = DOW.map(d => `<div class="dow">${d}</div>`).join('');
+  for (let i = 0; i < prim; i++) html += '<div class="fora"></div>';
+  for (let d = 1; d <= nd; d++) {
+    const dw = (prim + d - 1) % 7, hoje = h.getUTCFullYear() === a && h.getUTCMonth() + 1 === m && h.getUTCDate() === d;
+    const vs = (porDia[d] || []).sort((x, y) => x.nome.localeCompare(y.nome));
+    html += `<div class="${hoje ? 'hoje' : ''}${dw === 0 || dw === 6 ? ' fds' : ''}"><span class="dia">${d}</span>${vs.map(v => `<span class="vis" style="--h:${v.cor}" title="${esc(v.nome)} · ${esc(v.txt)}">${esc(v.nome)}</span>`).join('')}</div>`;
+  }
+  const resto = (7 - (prim + nd) % 7) % 7; for (let i = 0; i < resto; i++) html += '<div class="fora"></div>';
+  $('#cal').innerHTML = html;
+  const dias = Object.keys(porDia).map(Number).sort((x, y) => x - y);
+  $('#calListaTit').textContent = dias.length ? 'Visitas em ' + MES[m - 1] : 'Nenhuma data de visita em ' + MES[m - 1] + ' na planilha';
+  $('#calLista').innerHTML = dias.map(d => `<div><span class="num">${DOW[(prim + d - 1) % 7]} ${String(d).padStart(2, '0')}/${String(m).padStart(2, '0')}</span><span>${porDia[d].map(v => `<span class="dot" style="background:hsl(${v.cor} 60% 45%)"></span>${esc(v.nome)}`).join(' · ')}</span></div>`).join('');
+  const notas = a === CFG.ANO ? RC.agenda.filter(x => x.meses[m - 1].nota).map(x => `<div><span class="dot" style="background:hsl(${x.cor} 60% 45%)"></span><b>${esc(x.contrato || x.nome)}</b>: ${esc(x.meses[m - 1].nota)}</div>`) : [];
+  $('#calNotas').innerHTML = notas.length ? `<h3 style="font-size:14px;margin:4px 0">Anotações de ${MES[m - 1]}</h3><div class="listaMes">${notas.join('')}</div>` : '';
+}
+
+function agendaAno() {
+  $('#tag').innerHTML = `<thead><tr><th>Cliente</th><th class="l">Periodicidade</th>${MES3.map(m => `<th class="l">${m}</th>`).join('')}</tr></thead><tbody>` +
+    RC.agenda.map(x => `<tr><td style="white-space:normal;min-width:180px"><span class="dot" style="background:hsl(${x.cor} 60% 45%)"></span>${esc(x.nome)}${x.contrato && x.contrato !== x.nome ? `<br><span class="muted" style="font-size:11px">contrato: ${esc(x.contrato)}</span>` : (!x.contrato ? '<br><span class="muted" style="font-size:11px">sem contrato correspondente</span>' : '')}</td><td class="l" style="white-space:normal">${esc(x.periodicidade)}</td>${x.meses.map(mm => `<td class="l" style="white-space:normal;min-width:90px;font-size:11.5px">${esc(mm.txt)}${mm.datas.length ? `<br><span class="muted">${mm.datas.length} dia${mm.datas.length > 1 ? 's' : ''}</span>` : ''}</td>`).join('')}</tr>`).join('') + '</tbody>';
+}
+
+function gradeNF() {
+  const a = st.nfA, g = RC.grade(a), ed = P.podeEditar;
+  $('#nfTit').textContent = a;
+  $('#nfSub').textContent = ed ? 'Clique num mês para lançar a NF emitida (número, data de emissão e valor). A NF é gravada na aba “Controle NF Contratos”.' : 'Página aberta somente para leitura: clique num mês com NF para ver os detalhes.';
+  const totM = Array.from({ length: 12 }, (_, i) => g.reduce((s, r) => s + r.meses[i].soma, 0));
+  $('#tnf').innerHTML = `<thead><tr><th>Contrato</th><th>Parcela</th>${MES3.map(m => `<th style="text-align:center">${m}</th>`).join('')}<th>Faturado</th><th>Previsto</th></tr></thead><tbody>` +
+    g.map(r => `<tr><td><span class="dot" style="background:hsl(${r.k.cor} 60% 45%)"></span>${esc(r.k.nome)}</td><td class="num">${r.k.parcela != null ? brl0(r.k.parcela) : '–'}</td>${r.meses.map(x => {
+      const sel = st.nf && st.nf.contrato === r.k.nome && st.nf.a === a && st.nf.m === x.m;
+      const txt = x.lista.length ? (x.lista.length === 1 ? 'NF ' + esc(x.lista[0].numero) : x.lista.length + ' NFs') + '<br>' + brl0(x.soma) : x.st === 'pendente' ? 'pendente' : x.st === 'prevista' ? 'prevista' : '–';
+      const pode = ed || x.lista.length;
+      return `<td><button class="nfc ${x.st}${sel ? ' sel' : ''}" data-nf="${esc(r.k.nome)}|${a}|${x.m}"${pode ? '' : ' disabled'} title="${esc(r.k.nome)} · ${MES[x.m - 1]}/${a}">${txt}</button></td>`;
+    }).join('')}<td class="num">${brl0(r.fat)}</td><td class="num">${brl0(r.prev)}</td></tr>`).join('') +
+    `</tbody><tfoot><tr><th>Total</th><th></th>${totM.map(v => `<th class="num" style="text-align:center">${v ? brl0(v) : '–'}</th>`).join('')}<th class="num">${brl0(g.reduce((s, r) => s + r.fat, 0))}</th><th class="num">${brl0(g.reduce((s, r) => s + r.prev, 0))}</th></tr></tfoot>`;
+  painelNF();
+}
+
+function painelNF() {
+  const p = $('#nfPainel'), s = st.nf;
+  if (!s) { p.hidden = true; return; }
+  const k = RC.contratos.find(x => x.nome === s.contrato);
+  if (!k) { st.nf = null; p.hidden = true; return; }
+  const lista = RC.nfs.filter(x => x.contrato === s.contrato && x.a === s.a && x.m === s.m), ed = P.podeEditar;
+  const em = s.editId ? lista.find(x => x.id === s.editId) : null;
+  const hj = hojeD(), hojeTxt = String(hj.getUTCDate()).padStart(2, '0') + '/' + String(hj.getUTCMonth() + 1).padStart(2, '0') + '/' + hj.getUTCFullYear();
+  const v0 = em ? em.valor : (k.parcela || '');
+  p.hidden = false;
+  p.innerHTML = `<div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:baseline"><h2 style="margin:0">${esc(k.nome)} · ${MES[s.m - 1]} de ${s.a}</h2><button data-nfx="fechar">Fechar</button></div>
+  <p class="sub" style="margin:0">Parcela prevista: ${k.parcela != null ? brl2(k.parcela) : 'não informada'} · ${esc(k.forma)} · ${esc(k.situacao)}</p>
+  ${lista.length ? `<div class="tw"><table><thead><tr><th class="l">Nº NF</th><th class="l">Emissão</th><th>Valor</th><th class="l">Observação</th><th class="l">Lançada por</th>${ed ? '<th></th>' : ''}</tr></thead><tbody>${lista.map(x => `<tr><td class="l num">${esc(x.numero)}</td><td class="l num">${esc(x.data)}</td><td class="num">${brl2(x.valor)}</td><td class="l" style="white-space:normal">${esc(x.obs)}</td><td class="l">${esc(x.por)}<br><span class="muted">${esc(x.em)}</span></td>${ed ? `<td style="white-space:nowrap"><button data-nfx="editar" data-id="${esc(x.id)}">Corrigir</button> ${s.delId === x.id ? `<button class="pri" data-nfx="confirmar" data-id="${esc(x.id)}">Confirmar exclusão</button> <button data-nfx="naoexcluir">Manter</button>` : `<button data-nfx="excluir" data-id="${esc(x.id)}">Excluir</button>`}</td>` : ''}</tr>`).join('')}</tbody></table></div>` : '<p class="muted" style="margin:0">Nenhuma NF lançada neste mês.</p>'}
+  ${ed ? `<form class="form" id="nfForm" style="padding:0">
+    <label>Nº da NF<input name="numero" id="nfNumero" required value="${esc(em ? em.numero : '')}" autocomplete="off"></label>
+    <label>Data de emissão (dd/mm/aaaa)<input name="data" id="nfData" inputmode="numeric" value="${esc(em ? em.data : hojeTxt)}"></label>
+    <label>Valor da NF (R$)<input name="valor" id="nfValor" inputmode="decimal" value="${v0 === '' ? '' : Number(v0).toLocaleString('pt-BR', { minimumFractionDigits: 2, useGrouping: false })}"></label>
+    <label class="wide">Observação<input name="obs" id="nfObs" value="${esc(em ? em.obs : '')}" maxlength="500"></label>
+    <div class="acts"><button class="pri" type="submit">${em ? 'Gravar correção' : 'Lançar NF'}</button>${em ? '<button type="button" data-nfx="novo">Cancelar correção</button>' : ''}
+    <span class="msg ${s.msg && s.msg.erro ? 'err' : 'ok'}">${s.msg ? esc(s.msg.texto) : (em ? 'Corrigindo a NF ' + esc(em.numero) + '.' : 'Para mais de uma NF no mês, lance uma de cada vez.')}</span></div></form>` : ''}`;
+}
+
+async function postNF(corpo, okTexto) {
+  try {
+    const r = await fetch(con.url, { method: 'POST', redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(Object.assign({ chave: con.chave, quem: con.quem }, corpo)) });
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.erro || 'A planilha recusou a operação.');
+    st.nf.editId = null; st.nf.delId = null; st.nf.msg = { erro: false, texto: okTexto };
+    const nf = st.nf; st.nf = null; await carregar(); st.nf = nf; if (location.hash === '#contratos') gradeNF();
+  } catch (e) {
+    st.nf.msg = { erro: true, texto: (e instanceof TypeError) ? 'Sem resposta da planilha. Confira a aba de NFs antes de tentar de novo: a NF pode ter sido gravada.' : e.message };
+    painelNF();
+  }
+}
+
+$('#tnf').onclick = e => {
+  const b = e.target.closest('[data-nf]'); if (!b || b.disabled) return;
+  const [contrato, a, m] = b.dataset.nf.split('|');
+  const mesmo = st.nf && st.nf.contrato === contrato && st.nf.a === +a && st.nf.m === +m;
+  st.nf = mesmo ? null : { contrato, a: +a, m: +m, editId: null, delId: null, msg: null };
+  gradeNF(); if (st.nf) $('#nfPainel').scrollIntoView({ block: 'nearest' });
+};
+$('#nfPainel').onclick = e => {
+  const b = e.target.closest('[data-nfx]'); if (!b) return;
+  const x = b.dataset.nfx, s = st.nf; s.msg = null;
+  if (x === 'fechar') { st.nf = null; return gradeNF(); }
+  if (x === 'editar') { s.editId = b.dataset.id; s.delId = null; }
+  if (x === 'novo') s.editId = null;
+  if (x === 'excluir') s.delId = b.dataset.id;
+  if (x === 'naoexcluir') s.delId = null;
+  if (x === 'confirmar') { b.disabled = true; const nf = RC.nfs.find(n => n.id === b.dataset.id); return postNF({ acao: 'nf_excluir', id: b.dataset.id }, 'NF ' + (nf ? nf.numero : '') + ' excluída.'); }
+  painelNF();
+};
+$('#nfPainel').addEventListener('submit', e => {
+  e.preventDefault();
+  const s = st.nf, f = new FormData(e.target), numero = String(f.get('numero')).trim(), data = String(f.get('data')).trim();
+  const vTxt = String(f.get('valor')).replace(/R\$/g, '').replace(/\s/g, ''), valor = Number(vTxt.includes(',') ? vTxt.replace(/\./g, '').replace(',', '.') : vTxt);
+  const erro = !numero ? 'Informe o número da NF.' : !/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(data) ? 'Data inválida. Use dd/mm/aaaa.' : (!isFinite(valor) || valor <= 0 || !vTxt) ? 'Valor inválido. Use o formato 1500,00.' : '';
+  if (erro) { s.msg = { erro: true, texto: erro }; return painelNF(); }
+  e.target.querySelectorAll('button,input').forEach(el => el.disabled = true);
+  postNF({ acao: 'nf_salvar', nf: { id: s.editId || '', contrato: s.contrato, mes: s.a + '-' + String(s.m).padStart(2, '0'), numero, data, valor: Math.round(valor * 100) / 100, obs: String(f.get('obs')).trim() } }, (s.editId ? 'NF ' + numero + ' corrigida.' : 'NF ' + numero + ' lançada.'));
+});
+$('#calAnt').onclick = () => { st.calM--; if (st.calM < 1) { st.calM = 12; st.calA--; } calendario(); };
+$('#calProx').onclick = () => { st.calM++; if (st.calM > 12) { st.calM = 1; st.calA++; } calendario(); };
+$('#calHoje').onclick = () => { const h = hojeD(); st.calA = h.getUTCFullYear(); st.calM = h.getUTCMonth() + 1; calendario(); };
+$('#nfAnt').onclick = () => { st.nfA--; st.nf = null; gradeNF(); };
+$('#nfProx').onclick = () => { st.nfA++; st.nf = null; gradeNF(); };
 
 carregar();
 </script>
