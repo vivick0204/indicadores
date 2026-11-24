@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Painel de Orçamentos – Medsystem Calibração</title>
+<title>Painel de Calibração – Medsystem</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
@@ -126,14 +126,65 @@ a.kpi .ir{color:var(--accent);font-weight:600;font-size:12.5px}
 .leg .nfc{display:inline-block;width:auto;min-width:0;padding:1px 8px}
 #nfPainel{max-width:none}
 #nfPainel table td,#nfPainel table th{padding:5px 8px}
+/* menu lateral */
+.shell{display:grid;grid-template-columns:232px minmax(0,1fr);max-width:1460px;margin:0 auto;min-height:100vh}
+.menu{position:sticky;top:0;align-self:start;height:100vh;padding:24px 10px 24px 16px;border-right:1px solid var(--line);background:var(--card);display:flex;flex-direction:column;gap:2px}
+.menu .mtit{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);margin:0 0 10px 10px;font-weight:500}
+.menu a{display:block;padding:7px 10px;color:var(--fg);text-decoration:none;border-left:3px solid transparent;font-size:14px}
+.menu a.sub{padding-left:24px;font-size:13px;color:var(--mut)}
+.menu a:hover{background:var(--chip)}
+.menu a[aria-current="page"]{border-left-color:var(--accent);background:var(--chip);font-weight:600;color:var(--fg)}
+.menu a:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.shell>.wrap{max-width:1180px;width:100%}
+@media (max-width:1000px){
+  .shell{grid-template-columns:minmax(0,1fr)}
+  .menu{position:sticky;top:0;z-index:20;height:auto;flex-direction:row;overflow-x:auto;border-right:0;border-bottom:1px solid var(--line);padding:6px 12px;gap:0}
+  .menu .mtit{display:none}
+  .menu a,.menu a.sub{white-space:nowrap;border-left:0;border-bottom:3px solid transparent;padding:8px 10px;font-size:13px}
+  .menu a[aria-current="page"]{border-bottom-color:var(--accent)}
+}
+/* agenda */
+.cal.ed>div[data-dia]{cursor:pointer}
+.cal .dh{display:flex;justify-content:space-between;align-items:center;gap:4px}
+.cal .add{padding:0 7px;font-size:13px;line-height:1.4;opacity:0}
+.cal>div:hover .add,.cal .add:focus-visible{opacity:1}
+@media (hover:none){.cal .add{opacity:.7}}
+button.vis{display:block;width:100%;border:0;border-left:3px solid hsl(var(--h) 60% 45%);text-align:left;cursor:pointer;color:var(--fg);font-family:var(--sans);margin:0}
+button.vis:hover{background:hsl(var(--h) 60% 45% / .25)}
+.vis.os{border-left-style:dashed}
+.vis.sem{background:transparent;box-shadow:inset 0 0 0 1px hsl(var(--h) 60% 45% / .35)}
+.vis.canc{text-decoration:line-through;opacity:.55}
+.vis.sel{outline:2px solid var(--accent);outline-offset:1px}
+#agPainel{max-width:none}
+#agPainel fieldset{border:1px solid var(--line);padding:10px 12px 12px;margin:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+#agPainel legend{font-size:12.5px;color:var(--mut);padding:0 4px}
+#agPainel .radios{display:flex;gap:16px;flex-wrap:wrap;align-items:center;font-size:13px}
+#agPainel .radios label{flex-direction:row;align-items:center;gap:6px;color:var(--fg);font-size:13px}
+#agPainel .origem{font-size:12.5px;color:var(--mut);margin:0}
+.tot{font-family:var(--cond);font-size:20px;font-weight:600}
+#tagm tbody tr{cursor:pointer}
+#tagm tbody tr:hover td{background:var(--chip)}
+#tagm td.l{white-space:normal}
+.kpis.k6 .kpi b{font-size:22px;white-space:nowrap}
+#aAviso:empty,#aMsg:empty,#cAviso:empty{display:none}
+.okmsg{border:1px solid var(--ok);background:color-mix(in srgb,var(--ok) 10%,var(--card));padding:10px 14px;font-size:13px}
 </style>
 </head>
 <body>
+<div class="shell">
+<nav class="menu" id="menu" aria-label="Menu Calibração">
+  <h2 class="mtit">Menu – Calibração</h2>
+  <a href="#orcamentos" data-v="orcamentos">Orçamentos</a>
+  <a href="#clientes" class="sub" data-v="clientes">Clientes</a>
+  <a href="#grupos" class="sub" data-v="grupos">Grupos com várias unidades</a>
+  <a href="#contratos" data-v="contratos">Contratos e faturamento</a>
+  <a href="#agenda" data-v="agenda">Agenda de visitas e gastos</a>
+</nav>
 <div class="wrap">
 <header class="top">
   <div style="display:flex;flex-direction:column;gap:4px">
     <div class="eyebrow">Medsystem · Calibração</div>
-    <h1>Painel de orçamentos</h1>
+    <h1 id="titulo">Painel de orçamentos</h1>
     <p class="sub" id="fonte">Orçamentos solicitados, aprovados e perdidos por cliente, lidos direto da planilha.</p>
   </div>
   <div class="sync"><span class="led" id="led"></span><span id="sync">Sem conexão configurada</span>
@@ -167,7 +218,7 @@ a.kpi .ir{color:var(--accent);font-weight:600;font-size:12.5px}
 <div class="cuts" id="cuts"></div>
 </section>
 
-<section>
+<section id="secClientes">
 <div><h2>Clientes</h2><p class="sub">Cada CNPJ é um cliente. Clique numa linha para ver os orçamentos e o rastreio de cada um. Clique no cabeçalho para ordenar. <span id="dicaEdicao"></span></p></div>
 <div class="tools"><input type="search" id="q" placeholder="Buscar cliente, CNPJ ou nº da OS" aria-label="Buscar cliente, CNPJ ou número da OS"></div>
 <div class="tools" id="chips"></div>
@@ -176,7 +227,7 @@ a.kpi .ir{color:var(--accent);font-weight:600;font-size:12.5px}
 <button id="more" hidden style="align-self:flex-start">Mostrar mais 50</button>
 </section>
 
-<section>
+<section id="secGrupos">
 <div><h2>Grupos com várias unidades</h2><p class="sub">Soma dos CNPJs com a mesma raiz. Útil para redes em que uma unidade fecha e outra não. Clique num grupo para ver cada CNPJ; clique num CNPJ para ver as propostas dele.</p></div>
 <div class="tw"><table id="tg"><thead></thead><tbody></tbody></table></div>
 <button id="gmore" hidden style="align-self:flex-start">Mostrar mais 30</button>
@@ -197,25 +248,16 @@ a.kpi .ir{color:var(--accent);font-weight:600;font-size:12.5px}
 
 <div id="vContratos" hidden>
 <div class="wrap" style="padding:0">
-  <a href="#" class="voltar">← Voltar ao painel de orçamentos</a>
-  <div><h2 style="font-size:26px">Contratos e faturamento</h2>
+  <div>
   <p class="sub">Lido das abas “Contratos”, “Controle agendamento contratos ativos” e “Emissão de NFs”. As NFs lançadas aqui viram uma linha na aba “Emissão de NFs”, e as linhas digitadas direto nela aparecem aqui.</p></div>
   <div id="cAviso"></div>
   <div class="kpis" id="ckpis"></div>
 
   <section>
-  <div><h2>Contratos</h2><p class="sub">Situação calculada pelas datas de início e término. “Em renovação” vem da coluna Valor_Pgto_Vigente.</p></div>
+  <div><h2>Contratos</h2><p class="sub">Situação calculada pelas datas de início e término. “Em renovação” vem da coluna Valor_Pgto_Vigente. Visitas e gastos vêm da <a href="#agenda">agenda</a>; o resultado é o faturado menos os gastos lançados. A aba “Resumo atendimentos” da planilha mostra a mesma conta.</p></div>
   <div class="tw"><table id="tct"></table></div>
   </section>
 
-  <section>
-  <div><h2>Agenda de visitas</h2><p class="sub">Datas lidas do texto de cada mês na aba de agendamento. O que não é data (“atendendo”, “diversos”, “mandei mensagem”) aparece em Anotações do mês.</p></div>
-  <div class="calnav"><button id="calAnt" aria-label="Mês anterior">‹</button><b id="calTit"></b><button id="calProx" aria-label="Próximo mês">›</button><button id="calHoje">Mês atual</button></div>
-  <div class="cal" id="cal"></div>
-  <div><h3 style="font-size:14px;margin:4px 0" id="calListaTit"></h3><div class="listaMes" id="calLista"></div></div>
-  <div id="calNotas"></div>
-  <details><summary>Visão do ano como está na planilha</summary><div class="tw" style="margin-top:8px"><table id="tag"></table></div></details>
-  </section>
 
   <section>
   <div><h2>Emissão de NFs</h2><p class="sub" id="nfSub"></p></div>
@@ -224,6 +266,33 @@ a.kpi .ir{color:var(--accent);font-weight:600;font-size:12.5px}
   <div class="panel" id="nfPainel" hidden></div>
   <div id="nfConf"></div>
   </section>
+</div>
+</div>
+
+<div id="vAgenda" hidden>
+<div class="wrap" style="padding:0">
+  <p class="sub">Clique num dia para agendar uma visita e clique numa visita para lançar os gastos do técnico. Lido das abas “Agendamentos e gastos” e “Controle agendamento contratos ativos” e da coluna “Data de Agendamento” da aba Aprovados.</p>
+  <div id="aAviso"></div>
+  <div id="aMsg"></div>
+  <div class="kpis" id="akpis"></div>
+
+  <section>
+  <div class="calnav"><button id="calAnt" aria-label="Mês anterior">‹</button><b id="calTit"></b><button id="calProx" aria-label="Próximo mês">›</button><button id="calHoje">Mês atual</button>
+    <span style="flex:1"></span><span class="tools" id="agFiltros"></span></div>
+  <div class="leg"><span><span class="dot" style="background:var(--accent)"></span>linha cheia: visita com registro na aba Agendamentos e gastos</span><span>contorno: visita só na grade dos contratos ou em Aprovados</span><span>tracejado: orçamento aprovado</span></div>
+  <div class="cal" id="cal"></div>
+  <div class="panel" id="agPainel" hidden></div>
+  </section>
+
+  <section>
+  <div><h2 id="agTabTit">Visitas do mês</h2><p class="sub">Clique numa linha para lançar ou corrigir os gastos.</p></div>
+  <div class="tw"><table id="tagm"></table></div>
+  </section>
+
+  <div id="calNotas"></div>
+  <details><summary>Visão do ano da aba “Controle agendamento contratos ativos”</summary><div class="tw" style="margin-top:8px"><table id="tag"></table></div></details>
+  <datalist id="dlOS"></datalist><datalist id="dlTec"></datalist><datalist id="dlLocal"></datalist>
+</div>
 </div>
 </div>
 </div>
@@ -262,7 +331,7 @@ const CFG = {
     '53221255005290': 'AME ATIBAIA'
   }
 };
-const VERSAO_SCRIPT_ESPERADA = 5;   // a página foi feita para o Code.gs dessa versão
+const VERSAO_SCRIPT_ESPERADA = 6;   // a página foi feita para o Code.gs dessa versão
 
 /* =====================================================================
    CÁLCULO – recebe o que a planilha devolveu e monta toda a análise.
@@ -607,7 +676,7 @@ function analisarContratos(P, hoje, CFG) {
     return { linha: r[0], nome, periodicidade: cel(r, aPer), contrato: k ? k.nome : '', cor: k ? k.cor : 0, meses };
   }).filter(Boolean);
   const visitas = [];   // {t, nome, contrato, cor, txt}
-  for (const a of agenda) a.meses.forEach((m, j) => { for (const t of m.datas) visitas.push({ t, nome: a.contrato || a.nome, cor: a.cor, txt: m.txt, mesCol: j + 1 }); });
+  for (const a of agenda) a.meses.forEach((m, j) => { for (const t of m.datas) visitas.push({ t, nome: a.contrato || a.nome, contrato: a.contrato, cor: a.cor, txt: m.txt, mesCol: j + 1, linhaAgenda: a.linha, nomeAgenda: a.nome }); });
   // a mesma data pode aparecer duas vezes no texto: fica uma
   const vis = new Map(); for (const v of visitas) vis.set(v.t + '|' + v.nome, v);
 
@@ -661,6 +730,118 @@ function analisarContratos(P, hoje, CFG) {
   };
 }
 
+/* =====================================================================
+   AGENDA DE VISITAS E GASTOS
+   Junta três fontes e evita repetir a mesma visita:
+     1. aba "Agendamentos e gastos" (uma linha por visita, com os custos)  -> vale mais
+     2. aba "Controle agendamento contratos ativos" (texto por mês)        -> visitas de contrato
+     3. coluna "Data de Agendamento" da aba Aprovados                       -> visitas de orçamento aprovado
+   Uma visita das fontes 2 ou 3 some do calendário quando já existe linha na aba 1
+   para o mesmo contrato/OS na mesma data (ou com essa data como "Data original").
+   ===================================================================== */
+const CAB_AGEND = ['ID', 'Tipo', 'Contrato / Cliente', 'OS', 'Data', 'Local', 'Técnico', 'Status', 'Custo de deslocamento', 'Custo de hospedagem',
+  'Pernoite técnico', 'Refeição técnico', 'Total gastos', 'Observação', 'Data original', 'Lançado por', 'Lançado em', 'Alterado em'];
+// mesmas colunas e ordem que o Apps Script usa para conferir se a linha mudou
+const COLS_ASSIN_AG = ['ID', 'Tipo', 'Contrato / Cliente', 'OS', 'Data', 'Local', 'Técnico', 'Status',
+  'Custo de deslocamento', 'Custo de hospedagem', 'Pernoite técnico', 'Refeição técnico', 'Observação'];
+const CUSTOS = [['desloc', 'Custo de deslocamento', 'Deslocamento'], ['hosp', 'Custo de hospedagem', 'Hospedagem'], ['pernoite', 'Pernoite técnico', 'Pernoite'], ['refeicao', 'Refeição técnico', 'Refeição']];
+
+function analisarAgenda(P, RC, hoje, CFG) {
+  const money = s => {
+    s = String(s == null ? '' : s).replace('R$', '').replace(/ /g, '').replace(/\s/g, '').trim();
+    if (!s || s === '-') return null;
+    const v = Number(s.replace(/\./g, '').replace(',', '.'));
+    return isFinite(v) ? v : null;
+  };
+  const norm = s => String(s || '').toUpperCase().normalize('NFKD').replace(/[^\x00-\x7F]/g, '').replace(/[^A-Z0-9]+/g, ' ').trim();
+  const col = (aba, titulo) => { const t = norm(titulo); const i = (aba.cab || []).findIndex(h => norm(h) === t); return i < 0 ? -1 : i + 1; };
+  const cel = (r, i) => (i < 0 || r[i] == null) ? '' : String(r[i]).trim();
+  const nomeDe = s => String(s || '').split(/\s*-?\s*CPF\/CNPJ/)[0].replace(/ /g, ' ').replace(/\s+/g, ' ').replace(/^[\s-]+|[\s-]+$/g, '');
+  const dataDe = s => {
+    const m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(String(s || '').trim()); if (!m) return null;
+    const t = Date.UTC(+m[3], +m[2] - 1, +m[1]), d = new Date(t);
+    return d.getUTCDate() === +m[1] && d.getUTCMonth() === +m[2] - 1 ? t : null;
+  };
+  const corDe = nome => { const k = RC.contratos.find(x => norm(x.nome) === norm(nome)); return k ? k.cor : null; };
+
+  /* ---------- 1. aba Agendamentos e gastos ---------- */
+  const A = P.agendamentos || { cab: CAB_AGEND, linhas: [] }, c = {};
+  CAB_AGEND.forEach(k => c[k] = col(A, k));
+  const ags = [];
+  for (const r of A.linhas) {
+    const id = cel(r, c['ID']), nome = cel(r, c['Contrato / Cliente']);
+    if (!id && !nome) continue;
+    const g = k => cel(r, c[k]);
+    const x = { fonte: 'ag', id, linha: r[0], tipo: g('Tipo') || 'Contrato', nome, os: g('OS'), t: dataDe(g('Data')), dataTxt: g('Data'), local: g('Local'),
+      tecnico: g('Técnico'), status: g('Status') || 'Agendado', obs: g('Observação'), tOrig: dataDe(g('Data original')), por: g('Lançado por'), em: g('Lançado em'),
+      assinatura: COLS_ASSIN_AG.map(g).join('|') };
+    x.custos = {}; let tot = 0, tem = false;
+    for (const [k, titulo] of CUSTOS) { const v = money(g(titulo)); x.custos[k] = v; if (v != null) { tot += v; tem = true; } }
+    x.total = tot; x.temGastos = tem;
+    x.cor = x.tipo === 'Contrato' ? corDe(nome) : null;
+    ags.push(x);
+  }
+
+  /* ---------- Aprovados: lista de OS e datas já agendadas ---------- */
+  const ap = P.apr || { cab: [], linhas: [] }, ac = {};
+  ['OS', 'Cliente', 'Data de Agendamento', 'Endereco Completo', 'Status', 'Descrição', 'Valor', 'Gastos do atendimento'].forEach(k => ac[k] = col(ap, k));
+  const opcoesOS = [], vistoOS = new Set(), aprEv = [];
+  for (const r of ap.linhas) {
+    const os = cel(r, ac['OS']), status = cel(r, ac['Status']);
+    if (!os || os === '-' || /cancel/i.test(status)) continue;
+    const o = { os, cliente: nomeDe(cel(r, ac['Cliente'])), linha: r[0], endereco: cel(r, ac['Endereco Completo']), status, descricao: cel(r, ac['Descrição']), valor: money(cel(r, ac['Valor'])) };
+    if (!vistoOS.has(os)) { vistoOS.add(os); opcoesOS.push(o); }
+    // datas: "27/02/2026", "01/06/2026 e 02/06/2026", "17 e 18/11", "28-29/05"; textos como "no lab" ficam de fora
+    const txt = cel(r, ac['Data de Agendamento']); if (!txt) continue;
+    let datas = (txt.match(/\b\d{1,2}\/\d{1,2}\/\d{4}\b/g) || []).map(dataDe).filter(t => t != null);
+    if (!datas.length && /\d{1,2}\/\d{1,2}/.test(txt)) datas = RC.lerVisitas(txt, 0, CFG.ANO).datas;
+    for (const t of new Set(datas)) {
+      const y = new Date(t).getUTCFullYear(); if (y < CFG.ANO - 2 || y > CFG.ANO + 2) continue;
+      aprEv.push({ fonte: 'apr', tipo: 'Orçamento aprovado', nome: o.cliente || 'OS ' + os, os, t, aprLinha: r[0], local: o.endereco, txt });
+    }
+  }
+
+  /* ---------- juntar sem repetir ---------- */
+  const chave = (tipo, nome, os) => tipo === 'Contrato' ? 'C|' + norm(nome) : 'O|' + os;
+  const coberto = new Set();
+  for (const a of ags) { const k = chave(a.tipo, a.nome, a.os); if (a.t != null) coberto.add(k + '|' + a.t); if (a.tOrig != null) coberto.add(k + '|' + a.tOrig); }
+  const eventos = [];
+  for (const a of ags) if (a.t != null) eventos.push(Object.assign({ key: 'ag|' + a.id }, a));
+  for (const v of RC.visitas) {
+    const nome = v.contrato || v.nome;
+    if (coberto.has(chave('Contrato', nome, '') + '|' + v.t)) continue;
+    eventos.push({ key: 'gr|' + norm(nome) + '|' + v.t, fonte: 'grade', tipo: 'Contrato', nome, contratoOk: !!v.contrato, os: '', t: v.t, local: '', tecnico: '', status: v.t < hoje ? 'Realizado' : 'Agendado',
+      cor: v.cor, txt: v.txt, linhaAgenda: v.linhaAgenda, nomeAgenda: v.nomeAgenda, custos: {}, total: 0, temGastos: false });
+  }
+  const vistos = new Set();
+  for (const e of aprEv) {
+    const k = chave('Orçamento aprovado', '', e.os) + '|' + e.t;
+    if (coberto.has(k) || vistos.has(k)) continue; vistos.add(k);
+    eventos.push(Object.assign({ key: 'ap|' + e.os + '|' + e.t, status: e.t < hoje ? 'Realizado' : 'Agendado', tecnico: '', cor: null, custos: {}, total: 0, temGastos: false }, e));
+  }
+  eventos.sort((x, y) => x.t - y.t || x.nome.localeCompare(y.nome));
+
+  /* ---------- referências usadas ao gravar ---------- */
+  const agendaRef = nome => { const a = RC.agenda.find(x => x.contrato === nome) || RC.agenda.find(x => norm(x.nome) === norm(nome)); return a ? { linha: a.linha, nome: a.nome } : { linha: 0, nome }; };
+  const jaNaAgenda = (nome, t) => RC.visitas.some(v => (v.contrato || v.nome) === nome && v.t === t);
+  const aprRef = os => { const o = opcoesOS.find(x => x.os === os); return o ? { linha: o.linha } : { linha: 0 }; };
+  const tecnicos = [...new Set(ags.map(a => a.tecnico).filter(Boolean))].sort();
+  const locais = [...new Set(ags.map(a => a.local).filter(Boolean))].sort();
+
+  /* ---------- números por contrato (base para indicadores) ---------- */
+  function porContrato(ano) {
+    const m = new Map();
+    for (const e of eventos) {
+      if (e.tipo !== 'Contrato' || e.status === 'Cancelado' || new Date(e.t).getUTCFullYear() !== ano) continue;
+      const x = m.get(e.nome) || { visitas: 0, gastos: 0, comGastos: 0 };
+      x.visitas++; x.gastos += e.total; if (e.temGastos) x.comGastos++;
+      m.set(e.nome, x);
+    }
+    return m;
+  }
+  return { ags, eventos, opcoesOS, agendaRef, jaNaAgenda, aprRef, tecnicos, locais, porContrato, temAba: !!P.agendamentos };
+}
+
 
 /* =====================================================================
    TELA
@@ -677,17 +858,18 @@ const guarda = { get(k) { try { return localStorage.getItem('orc.' + k) || ''; }
 // Conexão: 1º o que veio no endereço (?api=...&chave=...), 2º o que está guardado no navegador, 3º o CFG.
 const qs = new URLSearchParams(location.search);
 const con = { url: qs.get('api') || guarda.get('url') || CFG.API_URL || '', chave: qs.get('chave') || guarda.get('chave') || '', quem: guarda.get('quem') };
-let R = null, P = null, RC = null, HOJE = null, carregando = false;
+let R = null, P = null, RC = null, RA = null, HOJE = null, carregando = false;
 const st = { p: 'Todos', q: '', k: 'v', dir: -1, lim: 50, open: null, edit: null, msg: null,
   gOpen: null, gUnit: null, glim: 30,                       // grupos: grupo aberto, CNPJ aberto dentro dele
-  calA: CFG.ANO, calM: null, nf: null };                    // contratos: mês do calendário, célula de NF aberta
+  calA: CFG.ANO, calM: null, nf: null,                      // mês do calendário, célula de NF aberta
+  ag: null, agF: 'Todos', agMsg: null };                    // agenda: visita aberta, filtro, mensagem após gravar
 
 function estado(tipo, texto) { $('#led').className = 'led ' + tipo; $('#sync').textContent = texto; }
 
 async function carregar(silencioso) {
   if (carregando) return;
   if (!con.url || !con.chave) { abrirConfig('Informe o endereço do App da Web e a chave para carregar os dados.'); return; }
-  if (silencioso && (st.edit || st.nf)) return;  // não atualiza por baixo de quem está editando
+  if (silencioso && (st.edit || st.nf || st.ag)) return;  // não atualiza por baixo de quem está editando
   carregando = true; estado('busy', 'Lendo a planilha…'); $('#bAtualizar').disabled = true;
   try {
     const r = await fetch(con.url + (con.url.includes('?') ? '&' : '?') + 'chave=' + encodeURIComponent(con.chave) + '&t=' + Date.now(), { redirect: 'follow' });
@@ -696,7 +878,7 @@ async function carregar(silencioso) {
     if (!j.ok) throw new Error(j.erro || 'Não foi possível ler a planilha.');
     const agora = new Date();
     const hojeUTC = Date.UTC(agora.getFullYear(), agora.getMonth(), agora.getDate());
-    P = j; R = analisar(j, hojeUTC, CFG); RC = analisarContratos(j, hojeUTC, CFG); HOJE = hojeUTC;
+    P = j; R = analisar(j, hojeUTC, CFG); RC = analisarContratos(j, hojeUTC, CFG); RA = analisarAgenda(j, RC, hojeUTC, CFG); HOJE = hojeUTC;
     R.Cmap = new Map(R.C.map(c => [c.id, c]));
     $('#fonte').textContent = 'Fonte: ' + j.planilha + '. Página aberta ' + (j.podeEditar ? 'com permissão de edição.' : 'somente para leitura.');
     estado('ok', 'Planilha lida em ' + j.atualizado + ' · relê a cada ' + CFG.ATUALIZAR_A_CADA_MIN + ' min');
@@ -874,73 +1056,271 @@ const DOW = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 const COR_SIT = { 'Vigente': '--ok', 'Em renovação': '--open', 'Vencido': '--lost', 'Encerrado': '--dup', 'Sem vigência informada': '--vc' };
 const hojeD = () => new Date(HOJE);
 
+const VIEWS = { orcamentos: ['app', 'Painel de orçamentos'], contratos: ['vContratos', 'Contratos e faturamento'], agenda: ['vAgenda', 'Agenda de visitas e gastos'] };
 function rota(rolarParaTopo) {
   if (!R) return;
-  const c = location.hash === '#contratos';
-  $('#app').hidden = c; $('#vContratos').hidden = !c;
-  if (c) pintarContratos(); else pintar();
-  if (rolarParaTopo) window.scrollTo(0, 0);
+  const h = (location.hash || '#orcamentos').slice(1);
+  const v = VIEWS[h] ? h : 'orcamentos';
+  for (const [k, [id]] of Object.entries(VIEWS)) $('#' + id).hidden = k !== v;
+  $('#titulo').textContent = VIEWS[v][1];
+  document.title = VIEWS[v][1] + ' – Medsystem Calibração';
+  document.querySelectorAll('#menu a').forEach(a => a.setAttribute('aria-current', a.dataset.v === (VIEWS[h] ? h : (h === 'clientes' || h === 'grupos' ? h : 'orcamentos')) ? 'page' : 'false'));
+  const ativo = document.querySelector('#menu a[aria-current="page"]'), menu = $('#menu');
+  if (ativo && menu.scrollWidth > menu.clientWidth) menu.scrollLeft = ativo.offsetLeft - 12;
+  if (v === 'contratos') pintarContratos(); else if (v === 'agenda') pintarAgenda(); else pintar();
+  if (h === 'clientes' || h === 'grupos') { if (rolarParaTopo) $(h === 'clientes' ? '#secClientes' : '#secGrupos').scrollIntoView(); }
+  else if (rolarParaTopo) window.scrollTo(0, 0);
+}
+
+/* avisos comuns às páginas que gravam na planilha */
+function avisosPagina(oQue) {
+  const avisos = [];
+  if ((P.versao || 0) < VERSAO_SCRIPT_ESPERADA) {
+    const id = (con.url.match(/\/s\/([^/]+)\/exec/) || [])[1] || '';
+    avisos.push(`<b>O endereço do Apps Script usado por esta página responde com uma versão anterior do script${P.versao ? ' (versão ' + P.versao + ')' : ' (versão 1, 2 ou 3)'}; esta página precisa da versão ${VERSAO_SCRIPT_ESPERADA}.</b> Por isso não dá para ${oQue}.<br>
+      Endereço em uso: <code style="word-break:break-all">…${esc(id.slice(-12))}/exec</code><br>
+      1. No Apps Script da planilha, confira se o código colado tem <code>const VERSAO_SCRIPT = ${VERSAO_SCRIPT_ESPERADA}</code> (logo depois do comentário inicial) e salve.<br>
+      2. Implantar › <b>Gerenciar implantações</b> › clique no lápis da implantação ativa › em “Versão” escolha <b>Nova versão</b> › Implantar. Só salvar o código não muda o que o endereço responde.<br>
+      3. Na mesma janela, compare o “URL do app da Web” com o endereço acima (os últimos caracteres). Se for diferente, copie esse URL e informe em <b>Conexão</b>.`);
+  }
+  if (!P.podeEditar) avisos.push(`<b>Página aberta com a chave de leitura</b>: dá para ver, mas não para ${oQue}. Clique em “Conexão” (no alto da página) e informe a chave de edição.`);
+  if (P.fuso && P.fuso !== 'America/Sao_Paulo') avisos.push(`O fuso horário da planilha está como <b>${esc(P.fuso)}</b>, por isso os horários lidos aparecem errados. Na planilha: Arquivo › Configurações › Fuso horário › (GMT-03:00) São Paulo.`);
+  return avisos;
 }
 window.addEventListener('hashchange', () => rota(true));
 
 function pintarContratos() {
   const RS = RC.resumo, h = hojeD(), mh = h.getUTCMonth() + 1;
   if (st.calM == null) { st.calA = h.getUTCFullYear(); st.calM = mh; }
-  const avisos = [];
-  if ((P.versao || 0) < VERSAO_SCRIPT_ESPERADA) {
-    const id = (con.url.match(/\/s\/([^/]+)\/exec/) || [])[1] || '';
-    avisos.push(`<b>O endereço do Apps Script usado por esta página responde com uma versão anterior do script${P.versao ? ' (versão ' + P.versao + ')' : ' (versão 1, 2 ou 3)'}; esta página precisa da versão ${VERSAO_SCRIPT_ESPERADA}.</b> Por isso não dá para lançar NFs.<br>
-      Endereço em uso: <code style="word-break:break-all">…${esc(id.slice(-12))}/exec</code><br>
-      1. No Apps Script da planilha, confira se o Code.gs colado começa com <code>const VERSAO_SCRIPT = ${VERSAO_SCRIPT_ESPERADA}</code> (logo depois do comentário inicial) e salve.<br>
-      2. Implantar › <b>Gerenciar implantações</b> › clique no lápis da implantação ativa › em “Versão” escolha <b>Nova versão</b> › Implantar. Só salvar o código não muda o que o endereço responde.<br>
-      3. Na mesma janela, compare o “URL do app da Web” com o endereço acima (os últimos caracteres). Se for diferente, você publicou numa implantação nova: copie esse URL e informe em <b>Conexão</b>.`);
-  }
-  else if (P.emissao === null) avisos.push('A aba “Emissão de NFs” não foi encontrada na planilha. Confira o nome da aba (ou ajuste ABA_EMISSAO no Apps Script).');
-  if (!P.podeEditar) avisos.push('<b>Página aberta com a chave de leitura</b>: dá para ver, mas não para lançar NFs. Clique em “Conexão” (no alto da página) e informe a chave de edição.');
-  if (P.fuso && P.fuso !== 'America/Sao_Paulo') avisos.push(`O fuso horário da planilha está como <b>${esc(P.fuso)}</b>, por isso os horários lidos aparecem errados. Na planilha: Arquivo › Configurações › Fuso horário › (GMT-03:00) São Paulo.`);
+  const avisos = avisosPagina('lançar NFs');
+  if ((P.versao || 0) >= VERSAO_SCRIPT_ESPERADA && P.emissao === null) avisos.push('A aba “Emissão de NFs” não foi encontrada na planilha. Confira o nome da aba (ou ajuste ABA_EMISSAO no Apps Script).');
   $('#cAviso').innerHTML = avisos.map(a => `<div class="aviso" style="margin-bottom:8px">${a}</div>`).join('');
-  const visMes = RC.visitas.filter(v => { const d = new Date(v.t); return d.getUTCFullYear() === h.getUTCFullYear() && d.getUTCMonth() + 1 === mh; });
+  const visMes = RA.eventos.filter(v => { const d = new Date(v.t); return v.tipo === 'Contrato' && v.status !== 'Cancelado' && d.getUTCFullYear() === h.getUTCFullYear() && d.getUTCMonth() + 1 === mh; });
   $('#ckpis').innerHTML = [
     [RS.nVig, 'contratos vigentes · ' + brl0(RS.valorVig) + ' por ano', '--ok'],
     [brl0(RS.fatAno), 'faturado em ' + RS.anoRef + ' · ' + RS.nfsAno + ' NFs lançadas', '--accent'],
     [brl0(RS.prevAteHoje), 'previsto pelas parcelas até ' + MES[mh - 1], ''],
     [RS.pendentes, 'meses com NF pendente em ' + RS.anoRef, '--lost'],
-    [new Set(visMes.map(v => v.nome)).size, 'contratos com visita em ' + MES[mh - 1] + ' · ' + new Set(visMes.map(v => v.t)).size + ' dias', '--rec']
+    [new Set(visMes.map(v => v.nome)).size, 'contratos com visita em ' + MES[mh - 1] + ' · ' + new Set(visMes.map(v => v.t)).size + ' dias · <a href="#agenda">ver agenda</a>', '--rec']
   ].map(k => `<div class="kpi"><b>${k[0]}</b><span>${k[2] ? `<i style="background:var(${k[2]})"></i>` : ''}${k[1]}</span></div>`).join('');
 
   // tabela de contratos
-  const g = RC.grade(RS.anoRef), gm = new Map(g.map(r => [r.k.nome, r]));
-  $('#tct').innerHTML = `<thead><tr><th>Contrato</th><th class="l">Situação</th><th class="l">Início</th><th class="l">Término</th><th>Valor</th><th class="l">Pagamento</th><th>Parcela</th><th class="l">Visitas</th><th>Faturado ${RS.anoRef}</th><th>NFs pendentes</th></tr></thead><tbody>` +
-    RC.contratos.map(k => { const r = gm.get(k.nome); return `<tr><td style="white-space:normal;min-width:220px"><span class="dot" style="background:hsl(${k.cor} 60% 45%)"></span>${esc(k.nome)}${k.pasta ? `<br><span class="muted num" style="font-size:11px;word-break:break-all">${esc(k.pasta)}</span>` : ''}</td><td class="l"><span class="pill" style="color:var(${COR_SIT[k.situacao]})">${esc(k.situacao)}</span></td><td class="l num">${esc(k.ini)}</td><td class="l" style="white-space:normal;max-width:160px">${esc(k.fim)}</td><td class="num">${k.valor != null ? brl2(k.valor) : esc('-')}</td><td class="l">${esc(k.forma)}</td><td class="num">${k.parcela != null ? brl2(k.parcela) : '<span class="muted">' + esc(k.pgtoTxt || '–') + '</span>'}</td><td class="l" style="white-space:normal;max-width:200px">${esc(k.periodicidade)}</td><td class="num">${brl2(r.fat)}</td><td class="num"${r.pend ? ' style="color:var(--lost)"' : ''}>${r.pend}</td></tr>`; }).join('') + '</tbody>';
-  calendario(); agendaAno(); gradeNF();
+  const g = RC.grade(RS.anoRef), gm = new Map(g.map(r => [r.k.nome, r])), pc = RA.porContrato(RS.anoRef);
+  const vz = { visitas: 0, gastos: 0, comGastos: 0 };
+  $('#tct').innerHTML = `<thead><tr><th>Contrato</th><th class="l">Situação</th><th class="l">Início</th><th class="l">Término</th><th>Valor</th><th class="l">Pagamento</th><th>Parcela</th><th class="l">Periodicidade</th><th>Faturado ${RS.anoRef}</th><th>NFs pendentes</th><th>Visitas ${RS.anoRef}</th><th>Gastos ${RS.anoRef}</th><th>Resultado</th></tr></thead><tbody>` +
+    RC.contratos.map(k => { const r = gm.get(k.nome); return `<tr><td style="white-space:normal;min-width:220px"><span class="dot" style="background:hsl(${k.cor} 60% 45%)"></span>${esc(k.nome)}${k.pasta ? `<br><span class="muted num" style="font-size:11px;word-break:break-all">${esc(k.pasta)}</span>` : ''}</td><td class="l"><span class="pill" style="color:var(${COR_SIT[k.situacao]})">${esc(k.situacao)}</span></td><td class="l num">${esc(k.ini)}</td><td class="l" style="white-space:normal;max-width:160px">${esc(k.fim)}</td><td class="num">${k.valor != null ? brl2(k.valor) : esc('-')}</td><td class="l">${esc(k.forma)}</td><td class="num">${k.parcela != null ? brl2(k.parcela) : '<span class="muted">' + esc(k.pgtoTxt || '–') + '</span>'}</td><td class="l" style="white-space:normal;max-width:200px">${esc(k.periodicidade)}</td><td class="num">${brl2(r.fat)}</td><td class="num"${r.pend ? ' style="color:var(--lost)"' : ''}>${r.pend}</td>${(() => { const x = pc.get(k.nome) || vz; return `<td class="num" title="${x.comGastos} com gastos lançados">${x.visitas}</td><td class="num">${brl2(x.gastos)}</td><td class="num"${r.fat - x.gastos < 0 ? ' style="color:var(--lost)"' : ''}>${brl2(r.fat - x.gastos)}</td>`; })()}</tr>`; }).join('') + '</tbody>';
+  gradeNF();
+}
+
+/* =====================================================================
+   PÁGINA DA AGENDA (#agenda)
+   ===================================================================== */
+const HUE_OS = 205;
+const corEv = e => e.cor != null ? e.cor : HUE_OS;
+const podeAg = () => P.podeEditar && (P.versao || 0) >= VERSAO_SCRIPT_ESPERADA;
+const filtroOk = e => st.agF === 'Todos' || (st.agF === 'Contratos' ? e.tipo === 'Contrato' : e.tipo !== 'Contrato');
+const doMes = (a, m) => RA.eventos.filter(e => { const d = new Date(e.t); return d.getUTCFullYear() === a && d.getUTCMonth() + 1 === m; });
+const rotulo = e => (e.tipo !== 'Contrato' ? 'OS ' + e.os + ' · ' : '') + e.nome + (e.temGastos ? ' · ' + brl0(e.total) : '');
+const num2 = v => v == null || v === '' ? '' : Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, useGrouping: false });
+const lerValor = s => { s = String(s || '').replace(/R\$/g, '').replace(/\s/g, ''); if (!s) return ''; const v = Number(s.includes(',') ? s.replace(/\./g, '').replace(',', '.') : s); return isFinite(v) && v >= 0 ? Math.round(v * 100) / 100 : NaN; };
+const dataUTC = s => { const m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(String(s || '').trim()); if (!m) return null; const t = Date.UTC(+m[3], +m[2] - 1, +m[1]), d = new Date(t); return d.getUTCDate() === +m[1] && d.getUTCMonth() === +m[2] - 1 ? t : null; };
+
+function pintarAgenda() {
+  const h = hojeD();
+  if (st.calM == null) { st.calA = h.getUTCFullYear(); st.calM = h.getUTCMonth() + 1; }
+  const avisos = avisosPagina('agendar visitas e lançar gastos');
+  if ((P.versao || 0) >= VERSAO_SCRIPT_ESPERADA && !RA.temAba) avisos.push('A aba “Agendamentos e gastos” não foi encontrada. Ela é criada sozinha no primeiro agendamento gravado pela página.');
+  $('#aAviso').innerHTML = avisos.map(a => `<div class="aviso" style="margin-bottom:8px">${a}</div>`).join('');
+  $('#aMsg').innerHTML = st.agMsg ? `<div class="okmsg">${esc(st.agMsg)}</div>` : '';
+  $('#dlOS').innerHTML = RA.opcoesOS.map(o => `<option value="${esc(o.os + ' — ' + o.cliente)}"></option>`).join('');
+  $('#dlTec').innerHTML = RA.tecnicos.map(t => `<option value="${esc(t)}"></option>`).join('');
+  $('#dlLocal').innerHTML = RA.locais.map(t => `<option value="${esc(t)}"></option>`).join('');
+  $('#agFiltros').innerHTML = ['Todos', 'Contratos', 'Orçamentos aprovados'].map(f => `<button aria-pressed="${st.agF === f}" data-f="${esc(f)}">${esc(f)}</button>`).join('');
+  calendario();
 }
 
 function calendario() {
-  const a = st.calA, m = st.calM, h = hojeD();
+  const a = st.calA, m = st.calM, h = hojeD(), ed = podeAg();
   $('#calTit').textContent = MES[m - 1] + ' de ' + a;
   const prim = new Date(Date.UTC(a, m - 1, 1)).getUTCDay(), nd = new Date(Date.UTC(a, m, 0)).getUTCDate();
-  const porDia = {};
-  for (const v of RC.visitas) { const d = new Date(v.t); if (d.getUTCFullYear() === a && d.getUTCMonth() + 1 === m) (porDia[d.getUTCDate()] = porDia[d.getUTCDate()] || []).push(v); }
+  const evs = doMes(a, m).filter(filtroOk), porDia = {};
+  for (const e of evs) (porDia[new Date(e.t).getUTCDate()] = porDia[new Date(e.t).getUTCDate()] || []).push(e);
+  const selKey = st.ag && st.ag.key;
   let html = DOW.map(d => `<div class="dow">${d}</div>`).join('');
   for (let i = 0; i < prim; i++) html += '<div class="fora"></div>';
   for (let d = 1; d <= nd; d++) {
     const dw = (prim + d - 1) % 7, hoje = h.getUTCFullYear() === a && h.getUTCMonth() + 1 === m && h.getUTCDate() === d;
-    const vs = (porDia[d] || []).sort((x, y) => x.nome.localeCompare(y.nome));
-    html += `<div class="${hoje ? 'hoje' : ''}${dw === 0 || dw === 6 ? ' fds' : ''}"><span class="dia">${d}</span>${vs.map(v => `<span class="vis" style="--h:${v.cor}" title="${esc(v.nome)} · ${esc(v.txt)}">${esc(v.nome)}</span>`).join('')}</div>`;
+    const ddmmaa = String(d).padStart(2, '0') + '/' + String(m).padStart(2, '0') + '/' + a;
+    html += `<div class="${hoje ? 'hoje' : ''}${dw === 0 || dw === 6 ? ' fds' : ''}" data-dia="${d}"><div class="dh"><span class="dia">${d}</span>${ed ? `<button class="add" data-novo="${d}" aria-label="Agendar visita em ${ddmmaa}" title="Agendar visita em ${ddmmaa}">+</button>` : ''}</div>` +
+      (porDia[d] || []).map(e => `<button class="vis${e.tipo !== 'Contrato' ? ' os' : ''}${e.fonte !== 'ag' ? ' sem' : ''}${e.status === 'Cancelado' ? ' canc' : ''}${e.key === selKey ? ' sel' : ''}" data-ev="${esc(e.key)}" style="--h:${corEv(e)}" title="${esc(rotulo(e) + ' · ' + e.status + (e.local ? ' · ' + e.local : '') + (e.tecnico ? ' · ' + e.tecnico : ''))}">${esc(rotulo(e))}</button>`).join('') + '</div>';
   }
   const resto = (7 - (prim + nd) % 7) % 7; for (let i = 0; i < resto; i++) html += '<div class="fora"></div>';
+  $('#cal').className = 'cal' + (ed ? ' ed' : '');
   $('#cal').innerHTML = html;
-  const dias = Object.keys(porDia).map(Number).sort((x, y) => x - y);
-  $('#calListaTit').textContent = dias.length ? 'Visitas em ' + MES[m - 1] : 'Nenhuma data de visita em ' + MES[m - 1] + ' na planilha';
-  $('#calLista').innerHTML = dias.map(d => `<div><span class="num">${DOW[(prim + d - 1) % 7]} ${String(d).padStart(2, '0')}/${String(m).padStart(2, '0')}</span><span>${porDia[d].map(v => `<span class="dot" style="background:hsl(${v.cor} 60% 45%)"></span>${esc(v.nome)}`).join(' · ')}</span></div>`).join('');
+  agKpis(); agTabela(); agNotas(); agendaAno(); agPainel();
+}
+
+function agKpis() {
+  const a = st.calA, m = st.calM;
+  const evs = doMes(a, m).filter(filtroOk).filter(e => e.status !== 'Cancelado');
+  const gMes = evs.reduce((s, e) => s + e.total, 0);
+  const gAno = RA.eventos.filter(e => filtroOk(e) && e.status !== 'Cancelado' && new Date(e.t).getUTCFullYear() === a).reduce((s, e) => s + e.total, 0);
+  const semG = evs.filter(e => e.t < HOJE && !e.temGastos).length, comG = evs.filter(e => e.temGastos);
+  $('#akpis').innerHTML = [
+    [evs.length, 'visitas em ' + MES[m - 1] + ' · ' + new Set(evs.map(e => e.t)).size + ' dias com atendimento', '--rec'],
+    [brl2(gMes), 'gastos lançados em ' + MES[m - 1], '--accent'],
+    [brl0(gAno), 'gastos lançados em ' + a, ''],
+    [comG.length ? brl2(gMes / comG.length) : '–', 'gasto médio por visita com gastos lançados', ''],
+    [semG, 'visitas já feitas em ' + MES[m - 1] + ' sem gastos lançados', '--open']
+  ].map(k => `<div class="kpi"><b>${k[0]}</b><span>${k[2] ? `<i style="background:var(${k[2]})"></i>` : ''}${k[1]}</span></div>`).join('');
+}
+
+function agTabela() {
+  const a = st.calA, m = st.calM, evs = doMes(a, m).filter(filtroOk);
+  $('#agTabTit').textContent = 'Visitas de ' + MES[m - 1] + ' de ' + a;
+  const soma = k => evs.filter(e => e.status !== 'Cancelado').reduce((s, e) => s + (e.custos[k] || 0), 0);
+  $('#tagm').innerHTML = `<thead><tr><th class="l">Data</th><th class="l">Tipo</th><th class="l">Contrato / cliente</th><th class="l">Local</th><th class="l">Técnico</th><th class="l">Status</th>${CUSTOS.map(c => `<th>${c[2]}</th>`).join('')}<th>Total</th></tr></thead><tbody>` +
+    (evs.length ? evs.map(e => `<tr data-ev="${esc(e.key)}" tabindex="0"><td class="l num">${DOW[new Date(e.t).getUTCDay()]} ${fmtD(e.t).slice(0, 5)}</td><td class="l">${e.tipo === 'Contrato' ? 'Contrato' : 'Orçamento'}</td><td class="l"><span class="dot" style="background:hsl(${corEv(e)} 60% 45%)"></span>${esc(e.nome)}${e.os ? `<br><span class="muted num" style="font-size:11.5px">OS ${esc(e.os)}</span>` : ''}</td><td class="l">${esc(e.local || '–')}</td><td class="l">${esc(e.tecnico || '–')}</td><td class="l">${esc(e.status)}</td>${CUSTOS.map(c => `<td class="num">${e.custos[c[0]] != null ? brl2(e.custos[c[0]]) : '<span class="muted">–</span>'}</td>`).join('')}<td class="num"><b>${e.temGastos ? brl2(e.total) : '<span class="muted">sem gastos</span>'}</b></td></tr>`).join('')
+      : `<tr><td colspan="${6 + CUSTOS.length + 1}" class="l muted">Nenhuma visita em ${MES[m - 1]}.${podeAg() ? ' Clique num dia do calendário para agendar.' : ''}</td></tr>`) +
+    `</tbody><tfoot><tr><th class="l" colspan="6">Total do mês (sem canceladas)</th>${CUSTOS.map(c => `<th class="num">${brl2(soma(c[0]))}</th>`).join('')}<th class="num">${brl2(CUSTOS.reduce((s, c) => s + soma(c[0]), 0))}</th></tr></tfoot>`;
+}
+
+function agNotas() {
+  const a = st.calA, m = st.calM;
   const notas = a === CFG.ANO ? RC.agenda.filter(x => x.meses[m - 1].nota).map(x => `<div><span class="dot" style="background:hsl(${x.cor} 60% 45%)"></span><b>${esc(x.contrato || x.nome)}</b>: ${esc(x.meses[m - 1].nota)}</div>`) : [];
-  $('#calNotas').innerHTML = notas.length ? `<h3 style="font-size:14px;margin:4px 0">Anotações de ${MES[m - 1]}</h3><div class="listaMes">${notas.join('')}</div>` : '';
+  $('#calNotas').innerHTML = notas.length ? `<h3 style="font-size:14px;margin:4px 0">Anotações de ${MES[m - 1]} na aba de agendamento dos contratos</h3><div class="listaMes">${notas.join('')}</div>` : '';
 }
 
 function agendaAno() {
   $('#tag').innerHTML = `<thead><tr><th>Cliente</th><th class="l">Periodicidade</th>${MES3.map(m => `<th class="l">${m}</th>`).join('')}</tr></thead><tbody>` +
     RC.agenda.map(x => `<tr><td style="white-space:normal;min-width:180px"><span class="dot" style="background:hsl(${x.cor} 60% 45%)"></span>${esc(x.nome)}${x.contrato && x.contrato !== x.nome ? `<br><span class="muted" style="font-size:11px">contrato: ${esc(x.contrato)}</span>` : (!x.contrato ? '<br><span class="muted" style="font-size:11px">sem contrato correspondente</span>' : '')}</td><td class="l" style="white-space:normal">${esc(x.periodicidade)}</td>${x.meses.map(mm => `<td class="l" style="white-space:normal;min-width:90px;font-size:11.5px">${esc(mm.txt)}${mm.datas.length ? `<br><span class="muted">${mm.datas.length} dia${mm.datas.length > 1 ? 's' : ''}</span>` : ''}</td>`).join('')}</tr>`).join('') + '</tbody>';
 }
+
+/* ---------- painel de agendamento / gastos ---------- */
+function agPainel() {
+  const p = $('#agPainel'), s = st.ag;
+  if (!s) { p.hidden = true; return; }
+  const e = s.key ? RA.eventos.find(x => x.key === s.key) : null;
+  if (s.key && !e) { st.ag = null; p.hidden = true; return; }
+  const ed = podeAg(), rv = s.rascunho || {};
+  const v = (k, padrao) => rv[k] !== undefined ? rv[k] : padrao;
+  const t = e ? e.t : s.t;
+  const tipo = s.tipo || (e ? e.tipo : 'Contrato');
+  const tipoFixo = e && e.fonte !== 'ag';
+  const contratos = RC.contratos.slice().sort((x, y) => (y.vigente - x.vigente) || x.nome.localeCompare(y.nome));
+  const nomeAtual = v('nome', e && e.tipo === 'Contrato' ? e.nome : '');
+  const opcC = contratos.map(k => `<option${k.nome === nomeAtual ? ' selected' : ''} value="${esc(k.nome)}">${esc(k.nome)}${k.vigente ? '' : ' (' + esc(k.situacao.toLowerCase()) + ')'}</option>`).join('') +
+    (nomeAtual && !contratos.some(k => k.nome === nomeAtual) ? `<option selected value="${esc(nomeAtual)}">${esc(nomeAtual)} (sem contrato na aba Contratos)</option>` : '');
+  const osAtual = v('os', e && e.os ? e.os + ' — ' + e.nome : '');
+  const statusAtual = v('status', e ? e.status : (t < HOJE ? 'Realizado' : 'Agendado'));
+  const origem = !e ? 'Novo agendamento. Ao gravar, a visita entra na aba “Agendamentos e gastos” e também ' + (tipo === 'Contrato' ? 'na aba “Controle agendamento contratos ativos”.' : 'na coluna “Data de Agendamento” da OS na aba Aprovados.')
+    : e.fonte === 'ag' ? `Registro da aba “Agendamentos e gastos” (linha ${e.linha})${e.por ? ', lançado por ' + esc(e.por) : ''}${e.em ? ' em ' + esc(e.em) : ''}.`
+    : e.fonte === 'grade' ? `Visita lida da aba “Controle agendamento contratos ativos” (texto do mês: “${esc(e.txt)}”). Ao gravar, ela ganha uma linha na aba “Agendamentos e gastos” com os gastos.`
+    : `Data lida da coluna “Data de Agendamento” da OS ${esc(e.os)} na aba Aprovados (“${esc(e.txt)}”). Ao gravar, ela ganha uma linha na aba “Agendamentos e gastos” e a coluna “Gastos do atendimento” passa a somar os gastos.`;
+  const custos = CUSTOS.map(c => [c, v(c[0], e ? num2(e.custos[c[0]]) : '')]);
+  const tot = custos.reduce((sm, [, x]) => { const n = lerValor(x); return sm + (isFinite(n) && n !== '' ? n : 0); }, 0);
+  const dis = ed ? '' : ' disabled';
+  p.hidden = false;
+  p.innerHTML = `<div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:baseline"><h2 style="margin:0">${e ? esc(rotulo(Object.assign({}, e, { temGastos: false }))) + ' · ' + DOW[new Date(e.t).getUTCDay()] + ' ' + fmtD(e.t) : 'Novo agendamento · ' + DOW[new Date(t).getUTCDay()] + ' ' + fmtD(t)}</h2><button type="button" data-agx="fechar">Fechar</button></div>
+  <p class="origem">${origem}</p>
+  <form class="form" id="agForm" style="padding:0">
+    <div class="wide radios" role="radiogroup" aria-label="Tipo de visita">${['Contrato', 'Orçamento aprovado'].map(x => `<label><input type="radio" name="tipo" value="${x}"${x === tipo ? ' checked' : ''}${tipoFixo || !ed ? ' disabled' : ''}> ${x}</label>`).join('')}</div>
+    ${tipo === 'Contrato'
+      ? `<label class="wide">Contrato<select name="nome" id="agNome"${dis || (tipoFixo ? ' disabled' : '')}><option value="">Escolha o contrato</option>${opcC}</select></label>`
+      : `<label class="wide">OS do orçamento aprovado<input name="os" id="agOS" list="dlOS" value="${esc(osAtual)}" placeholder="Digite o nº da OS ou o nome do cliente" autocomplete="off"${dis || (tipoFixo ? ' disabled' : '')}></label>`}
+    <label>Data (dd/mm/aaaa)<input name="data" id="agData" inputmode="numeric" value="${esc(v('data', fmtD(t)))}"${dis}></label>
+    <label>Status<select name="status" id="agStatus"${dis}>${['Agendado', 'Realizado', 'Cancelado'].map(x => `<option${x === statusAtual ? ' selected' : ''}>${x}</option>`).join('')}</select></label>
+    <label>Técnico<input name="tecnico" id="agTec" list="dlTec" value="${esc(v('tecnico', e ? e.tecnico : ''))}" maxlength="120"${dis}></label>
+    <label class="wide">Local<input name="local" id="agLocal" list="dlLocal" value="${esc(v('local', e ? e.local : ''))}" maxlength="300" placeholder="Endereço, unidade ou setor"${dis}></label>
+    <fieldset class="wide"><legend>Gastos do atendimento (R$)</legend>
+      ${custos.map(([c, x]) => `<label>${c[2] === 'Deslocamento' ? 'Custo de deslocamento' : c[2] === 'Hospedagem' ? 'Custo de hospedagem' : c[2] === 'Pernoite' ? 'Pernoite técnico' : 'Refeição técnico'}<input name="${c[0]}" inputmode="decimal" value="${esc(x)}" placeholder="0,00"${dis}></label>`).join('')}
+      <div style="display:flex;flex-direction:column;justify-content:flex-end;gap:2px"><span class="muted" style="font-size:12px">Total</span><span class="tot num" id="agTot">${brl2(tot)}</span></div>
+    </fieldset>
+    <label class="wide">Observação<input name="obs" id="agObs" value="${esc(v('obs', e ? e.obs || '' : ''))}" maxlength="500"${dis}></label>
+    <div class="acts">${ed ? `<button class="pri" type="submit">${e && e.fonte === 'ag' ? 'Gravar alterações' : 'Gravar agendamento'}</button>` : ''}
+      ${ed && e && e.fonte === 'ag' ? (s.del ? '<button type="button" class="pri" data-agx="confirmar">Confirmar exclusão</button><button type="button" data-agx="naoexcluir">Manter</button>' : '<button type="button" data-agx="excluir">Excluir agendamento</button>') : ''}
+      <span class="msg ${s.msg && s.msg.erro ? 'err' : 'ok'}">${s.msg ? esc(s.msg.texto) : (ed ? (s.del ? 'A visita sai da aba “Agendamentos e gastos” e a data sai da agenda dos contratos ou da coluna Data de Agendamento.' : '') : 'Só leitura: veja o aviso no alto da página.')}</span></div>
+  </form>`;
+}
+
+function abrirAg(obj) { st.ag = Object.assign({ msg: null, del: false, rascunho: null, tipo: null }, obj); st.agMsg = null; $('#aMsg').innerHTML = ''; calendario(); $('#agPainel').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
+function guardarRascunho() { const f = $('#agForm'); if (f && st.ag) st.ag.rascunho = Object.fromEntries(new FormData(f)); }
+
+async function postAg(corpo, okTexto) {
+  try {
+    const r = await fetch(con.url, { method: 'POST', redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(Object.assign({ chave: con.chave, quem: con.quem }, corpo)) });
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.erro || 'A planilha recusou a operação.');
+    st.ag = null; st.agMsg = okTexto + (j.avisos && j.avisos.length ? ' ' + j.avisos.join(' ') : '');
+    await carregar();
+  } catch (e) {
+    if (!st.ag) return;
+    st.ag.del = false;
+    st.ag.msg = { erro: true, texto: (e instanceof TypeError) ? 'Sem resposta da planilha. Confira a aba Agendamentos e gastos antes de tentar de novo: o agendamento pode ter sido gravado.' : e.message };
+    agPainel();
+  }
+}
+
+$('#cal').addEventListener('click', ev => {
+  const b = ev.target.closest('[data-ev]');
+  if (b) return abrirAg({ key: b.dataset.ev });
+  if (!podeAg()) return;
+  const d = ev.target.closest('[data-novo]') || ev.target.closest('[data-dia]');
+  if (d) abrirAg({ t: Date.UTC(st.calA, st.calM - 1, +(d.dataset.novo || d.dataset.dia)) });
+});
+$('#tagm').addEventListener('click', ev => { const tr = ev.target.closest('tr[data-ev]'); if (tr) abrirAg({ key: tr.dataset.ev }); });
+$('#tagm').addEventListener('keydown', ev => { if (ev.key === 'Enter' && ev.target.matches('tr[data-ev]')) abrirAg({ key: ev.target.dataset.ev }); });
+$('#agFiltros').addEventListener('click', ev => { const b = ev.target.closest('[data-f]'); if (!b) return; st.agF = b.dataset.f; pintarAgenda(); });
+$('#agPainel').addEventListener('click', ev => {
+  const b = ev.target.closest('[data-agx]'); if (!b || !st.ag) return;
+  const x = b.dataset.agx, s = st.ag;
+  if (x === 'fechar') { st.ag = null; return calendario(); }
+  guardarRascunho(); s.msg = null;
+  if (x === 'excluir') s.del = true;
+  if (x === 'naoexcluir') s.del = false;
+  if (x === 'confirmar') {
+    const e = RA.eventos.find(y => y.key === s.key); if (!e) return;
+    b.disabled = true;
+    return postAg({ acao: 'ag_excluir', id: e.id, antes: e.assinatura, agenda: e.tipo === 'Contrato' ? RA.agendaRef(e.nome) : null, apr: e.tipo !== 'Contrato' ? RA.aprRef(e.os) : null }, 'Agendamento excluído.');
+  }
+  agPainel();
+});
+$('#agPainel').addEventListener('change', ev => {
+  if (ev.target.name === 'tipo') { guardarRascunho(); st.ag.tipo = ev.target.value; delete st.ag.rascunho.nome; delete st.ag.rascunho.os; return agPainel(); }
+  if (ev.target.name === 'os') {                        // preenche o local com o endereço da OS
+    const os = ev.target.value.split('—')[0].trim(), o = RA.opcoesOS.find(x => x.os === os), loc = $('#agLocal');
+    if (o && o.endereco && loc && !loc.value) loc.value = o.endereco;
+  }
+});
+$('#agPainel').addEventListener('input', ev => {
+  if (!CUSTOS.some(c => c[0] === ev.target.name)) return;
+  const f = new FormData($('#agForm'));
+  const tot = CUSTOS.reduce((s, c) => { const n = lerValor(f.get(c[0])); return s + (isFinite(n) && n !== '' ? n : 0); }, 0);
+  $('#agTot').textContent = brl2(tot);
+});
+$('#agPainel').addEventListener('submit', ev => {
+  ev.preventDefault();
+  const s = st.ag, e = s.key ? RA.eventos.find(y => y.key === s.key) : null, f = new FormData(ev.target);
+  const tipo = s.tipo || (e ? e.tipo : 'Contrato');
+  const erro = m => { guardarRascunho(); s.msg = { erro: true, texto: m }; agPainel(); };
+  let nome, os = '';
+  if (tipo === 'Contrato') { nome = e && e.fonte !== 'ag' ? e.nome : String(f.get('nome') || ''); if (!nome) return erro('Escolha o contrato.'); }
+  else {
+    os = e && e.fonte !== 'ag' ? e.os : String(f.get('os') || '').split('—')[0].trim();
+    if (!os) return erro('Informe a OS do orçamento aprovado.');
+    const o = RA.opcoesOS.find(x => x.os === os);
+    nome = o ? (o.cliente || 'OS ' + os) : (e && e.os === os ? e.nome : 'OS ' + os);
+  }
+  const data = String(f.get('data') || '').trim(), t = dataUTC(data);
+  if (t == null) return erro('Data inválida. Use dd/mm/aaaa.');
+  const ag = { id: e && e.fonte === 'ag' ? e.id : '', tipo, nome, os, data, dataOriginal: e && e.fonte !== 'ag' ? fmtD(e.t) : '',
+    local: String(f.get('local') || '').trim(), tecnico: String(f.get('tecnico') || '').trim(), status: String(f.get('status')), obs: String(f.get('obs') || '').trim() };
+  for (const c of CUSTOS) { const n = lerValor(f.get(c[0])); if (Number.isNaN(n)) return erro('Valor de gasto inválido em “' + c[2] + '”. Use o formato 150,00.'); ag[c[0]] = n; }
+  const agenda = tipo === 'Contrato' ? Object.assign(e && e.fonte === 'grade' ? { linha: e.linhaAgenda, nome: e.nomeAgenda } : RA.agendaRef(nome), { jaNaAgenda: RA.jaNaAgenda(nome, t) }) : null;
+  const apr = tipo !== 'Contrato' ? (e && e.aprLinha ? { linha: e.aprLinha } : RA.aprRef(os)) : null;
+  ev.target.querySelectorAll('button,input,select').forEach(x => x.disabled = true);
+  postAg({ acao: 'ag_salvar', ag, antes: e && e.fonte === 'ag' ? e.assinatura : '', agenda, apr }, (e && e.fonte === 'ag' ? 'Agendamento atualizado: ' : 'Agendamento gravado: ') + nome + ' em ' + data + '.');
+});
 
 function gradeNF() {
   const a = CFG.ANO, g = RC.grade(a), ed = P.podeEditar && RC.temAbaNF && (P.versao || 0) >= VERSAO_SCRIPT_ESPERADA;
@@ -1029,9 +1409,9 @@ $('#nfPainel').addEventListener('submit', e => {
   e.target.querySelectorAll('button,input').forEach(el => el.disabled = true);
   postNF({ acao: 'nf_salvar', linha: s.editLinha || 0, antes: s.editLinha ? assinatura(s.editLinha) : '', nf: { contrato: s.contrato, mes: s.m, ano: CFG.ANO, numero, data, valor: Math.round(valor * 100) / 100, obs: String(f.get('obs')).trim() } }, (s.editLinha ? 'NF ' + numero + ' corrigida.' : 'NF ' + numero + ' lançada.'));
 });
-$('#calAnt').onclick = () => { st.calM--; if (st.calM < 1) { st.calM = 12; st.calA--; } calendario(); };
-$('#calProx').onclick = () => { st.calM++; if (st.calM > 12) { st.calM = 1; st.calA++; } calendario(); };
-$('#calHoje').onclick = () => { const h = hojeD(); st.calA = h.getUTCFullYear(); st.calM = h.getUTCMonth() + 1; calendario(); };
+$('#calAnt').onclick = () => { st.calM--; if (st.calM < 1) { st.calM = 12; st.calA--; } st.ag = null; calendario(); };
+$('#calProx').onclick = () => { st.calM++; if (st.calM > 12) { st.calM = 1; st.calA++; } st.ag = null; calendario(); };
+$('#calHoje').onclick = () => { const h = hojeD(); st.calA = h.getUTCFullYear(); st.calM = h.getUTCMonth() + 1; st.ag = null; calendario(); };
 
 carregar();
 </script>
