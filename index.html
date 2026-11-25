@@ -1332,11 +1332,12 @@ function equipamentosHtml(e) {
     }
     return `<p class="eqinfo"><b>Nenhum equipamento encontrado para esta visita.</b> ${crit}.</p><p class="eqinfo">${por.map(x => x.charAt(0).toUpperCase() + x.slice(1)).join('. ')}.</p>`;
   }
-  const cab = r.cab.map((h, i) => [h, i + 1]).filter(([h]) => h);
-  const critCols = new Set(['CLIENTE', 'TECNICO', 'DATA CRIACAO']);
+  // colunas mostradas: [título na aba, título na página]
+  const MOSTRAR = [['Identificador', 'Identificador'], ['Equipamento', 'Equipamento'], ['Correção', 'Correção'], ['Tipo de erro', 'Tipo de erro'], ['Aprovado', 'Aprovado'], ['Data da Checagem', 'Data de liberação']];
+  const cab = MOSTRAR.map(([t, rot]) => [rot, r.cab.findIndex(h => certNorm(h) === certNorm(t)) + 1]).filter(([, i]) => i > 0);
   return `<p class="eqinfo"><b>${r.itens.length} equipamento${r.itens.length > 1 ? 's' : ''}</b> · ${crit} · cliente na aba: ${esc([...r.diag.nomesCert].join('; '))}</p>
-    <div class="tw"><table><thead><tr><th class="l">Linha</th>${cab.map(([h]) => `<th class="l${critCols.has(certNorm(h)) ? ' crit' : ''}">${esc(h)}</th>`).join('')}</tr></thead><tbody>${
-      r.itens.map(x => `<tr><td class="l num muted">${x[0]}</td>${cab.map(([h, i]) => `<td class="l${critCols.has(certNorm(h)) ? ' crit' : ''}">${esc(x[i] || '')}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+    <div class="tw"><table><thead><tr>${cab.map(([h]) => `<th class="l">${esc(h)}</th>`).join('')}</tr></thead><tbody>${
+      r.itens.map(x => `<tr title="Linha ${x[0]} da aba Controle de Certificados">${cab.map(([, i]) => `<td class="l">${esc(x[i] || '')}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
 }
 
 function agNotas() {
