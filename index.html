@@ -167,6 +167,19 @@ button.vis:hover{background:hsl(var(--h) 60% 45% / .25)}
 #tagm td.l{white-space:normal}
 .kpis.k6 .kpi b{font-size:22px;white-space:nowrap}
 #aAviso:empty,#aMsg:empty,#cAviso:empty{display:none}
+#tagm td[data-c="eq"]{cursor:pointer}
+#tagm td[data-c="ag"]{cursor:pointer}
+#tagm tr.aberta>td{background:var(--chip)}
+#tagm tr.eqrow,#tagm tr.eqrow:hover td{cursor:default}
+#tagm tr.eqrow>td{background:var(--bg);padding:10px 12px 14px;white-space:normal}
+#tagm tr.eqrow table{font-size:12px;background:var(--card)}
+#tagm tr.eqrow table th{background:var(--chip);position:static;cursor:default}
+#tagm tr.eqrow table td{white-space:nowrap;cursor:default}
+#tagm tr.eqrow .crit{background:color-mix(in srgb,var(--accent) 12%,var(--card))}
+.eqbox{position:sticky;left:12px;max-width:calc(100vw - 300px)}
+@media (max-width:1000px){.eqbox{max-width:calc(100vw - 60px)}}
+.eqinfo{font-size:12.5px;color:var(--mut);margin:0 0 8px}
+.eqinfo b{color:var(--fg)}
 .okmsg{border:1px solid var(--ok);background:color-mix(in srgb,var(--ok) 10%,var(--card));padding:10px 14px;font-size:13px}
 </style>
 </head>
@@ -285,7 +298,7 @@ button.vis:hover{background:hsl(var(--h) 60% 45% / .25)}
   </section>
 
   <section>
-  <div><h2 id="agTabTit">Visitas do mês</h2><p class="sub">Clique numa linha para lançar ou corrigir os gastos.</p></div>
+  <div><h2 id="agTabTit">Visitas do mês</h2><p class="sub">Clique em Data, Tipo, Contrato / cliente, Local ou Técnico para ver os equipamentos da visita (aba “Controle de Certificados”). Clique em Status ou nos gastos para abrir o agendamento.</p></div>
   <div class="tw"><table id="tagm"></table></div>
   </section>
 
@@ -331,7 +344,7 @@ const CFG = {
     '53221255005290': 'AME ATIBAIA'
   }
 };
-const VERSAO_SCRIPT_ESPERADA = 6;   // a página foi feita para o Code.gs dessa versão
+const VERSAO_SCRIPT_ESPERADA = 7;   // a página foi feita para o Code.gs dessa versão
 
 /* =====================================================================
    CÁLCULO – recebe o que a planilha devolveu e monta toda a análise.
@@ -842,6 +855,100 @@ function analisarAgenda(P, RC, hoje, CFG) {
   return { ags, eventos, opcoesOS, agendaRef, jaNaAgenda, aprRef, tecnicos, locais, porContrato, temAba: !!P.agendamentos };
 }
 
+/* =====================================================================
+   EQUIPAMENTOS DA VISITA – aba "Controle de Certificados"
+   Um equipamento entra na lista da visita só quando os TRÊS critérios batem:
+     Cliente      ↔ contrato/cliente da visita (comparação por palavras que identificam o cliente)
+     Técnico      ↔ técnico informado na visita (nome ou primeiro nome; "João/Gabriel" vale para os dois)
+     Data Criação ↔ data da visita (mesmo dia)
+   ===================================================================== */
+const CERT_GENERICOS = new Set(('HOSPITAL HOSPITALAR DE DA DO DOS DAS E EM NO NA LTDA SA S/A ME EPP EIRELI COOPERATIVA TRABALHO MEDICO MEDICA MEDICOS ' +
+  'SAUDE CENTRO INSTITUTO CLINICA CLINICAS SANTA SANTO SAO CASA ASSOCIACAO UNIMED MUNICIPIO PREFEITURA MUNICIPAL FUNDACAO FUNDO GERAL ' +
+  'SERVICOS REGIONAL AME UNIDADE UNIDADES REDE SPDM PAULISTA PARA DESENVOLVIMENTO MEDICINA ATENDIMENTO INTEGRADO CARIDADE MISERICORDIA ' +
+  'LABORATORIO DIAGNOSTICO DIAGNOSTICOS IMAGEM BENEFICENTE BENEFICENCIA SOCIEDADE IRMANDADE MATERNIDADE EMPRESA INDUSTRIA COMERCIO GRUPO ' +
+  'NOVA SETOR ASSISTENCIAL CENTRAL NORTE SUL LESTE OESTE ESTADUAL FEDERAL ENSINO PESQUISA ASSISTENCIA HOSPITAIS SECRETARIA').split(' '));
+
+// redes com muitas unidades: se a marca aparece num nome e não no outro, não é o mesmo cliente
+// (ex.: "HOSPITAL REGIONAL DE ITAPETININGA - HRI" não é "Unimed de Itapetininga")
+const CERT_MARCAS = ['UNIMED', 'SECONCI', 'SPDM', 'AME', 'SESI', 'SENAI', 'UBS', 'UPA', 'UAI'];
+
+function certNorm(s) {
+  return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toUpperCase().replace(/[^A-Z0-9]+/g, ' ').trim();
+}
+
+/* palavras que identificam o cliente (sem as genéricas); siglas como HRI/INCOR/CEPOG contam */
+function certPalavras(s) {
+  return new Set(certNorm(s).split(' ').filter(w => w.length >= 3 && !CERT_GENERICOS.has(w) && !/^\d+$/.test(w)));
+}
+
+function certClienteBate(nomesVisita, nomeCert) {
+  const b = certNorm(nomeCert), tb = certPalavras(nomeCert);
+  const marcas = x => CERT_MARCAS.filter(m => (' ' + x + ' ').includes(' ' + m + ' ')).join(',');
+  for (const nv of nomesVisita) {
+    const a = certNorm(nv); if (!a) continue;
+    if (a === b) return true;
+    if (marcas(a) !== marcas(b)) continue;
+    const ta = certPalavras(nv);
+    // um nome inteiro dentro do outro (ex.: "HOSPITAL SANTA LUCINDA" em "HOSPITAL SANTA LUCINDA LTDA"),
+    // desde que o nome menor tenha alguma palavra própria ("CENTRO MEDICO" sozinho não basta)
+    if (ta.size && a.length >= 6 && (' ' + b + ' ').includes(' ' + a + ' ')) return true;
+    if (tb.size && b.length >= 6 && (' ' + a + ' ').includes(' ' + b + ' ')) return true;
+    const comum = [...ta].filter(w => tb.has(w));
+    if (comum.length >= 2) return true;
+    // uma palavra em comum basta quando um dos lados só tem essa palavra (ex.: "INCOR", "HOSPITAL CEPOG LTDA")
+    if (comum.length === 1 && (ta.size === 1 || tb.size === 1)) return true;
+    // ou quando é uma sigla curta escrita em maiúsculas nos dois nomes (ex.: "- HRI" e "(HRI)")
+    if (comum.length === 1 && comum[0].length <= 4 && new RegExp('\\b' + comum[0] + '\\b').test(String(nv)) && new RegExp('\\b' + comum[0] + '\\b').test(String(nomeCert))) return true;
+  }
+  return false;
+}
+
+function certTecnicos(s) {
+  return String(s || '').split(/\s*[\/,;&+]\s*|\s+e\s+/i).map(certNorm).filter(Boolean);
+}
+function certTecnicoBate(tecVisita, tecCert) {
+  const a = certTecnicos(tecVisita), b = certTecnicos(tecCert);
+  for (const x of a) for (const y of b) {
+    if (x === y) return true;
+    const px = x.split(' ')[0], py = y.split(' ')[0];
+    if (px.length >= 3 && px === py) return true;                 // "Paulo" ↔ "Paulo Boza"
+  }
+  return false;
+}
+
+function certData(s) {
+  const m = /^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/.exec(String(s || '').trim()); if (!m) return null;
+  let y = +m[3]; if (y < 100) y += 2000;
+  const t = Date.UTC(y, +m[2] - 1, +m[1]), d = new Date(t);
+  return d.getUTCDate() === +m[1] && d.getUTCMonth() === +m[2] - 1 ? t : null;
+}
+
+/**
+ * cert = { cab, linhas } da aba; visita = { t, tecnico, nomes: [nomes do cliente/contrato] }
+ * Devolve { cab, itens: linhas que batem nos três critérios, diag: contagens para explicar quando não há itens }
+ */
+function certEquipamentos(cert, visita) {
+  const cab = cert.cab || [], i = t => cab.findIndex(h => certNorm(h) === certNorm(t)) + 1;   // +1: linha começa com o nº da linha
+  const cCli = i('Cliente'), cTec = i('Técnico'), cData = i('Data Criação');
+  if (!cCli || !cTec || !cData) return { erro: 'A aba “Controle de Certificados” precisa das colunas Cliente, Técnico e Data Criação.' };
+  const diag = { cliente: 0, clienteData: 0, clienteDataSemTec: 0, nomesCert: new Set(), tecnicosNaData: new Set() };
+  const itens = [];
+  const cacheCli = new Map();
+  for (const r of cert.linhas) {
+    const cli = String(r[cCli] || '').trim();
+    let ok = cacheCli.get(cli); if (ok === undefined) { ok = certClienteBate(visita.nomes, cli); cacheCli.set(cli, ok); }
+    if (!ok) continue;
+    diag.cliente++;
+    if (certData(r[cData]) !== visita.t) continue;
+    diag.clienteData++; diag.nomesCert.add(cli);
+    const tec = String(r[cTec] || '').trim();
+    if (!tec) { diag.clienteDataSemTec++; continue; }
+    diag.tecnicosNaData.add(tec);
+    if (visita.tecnico && certTecnicoBate(visita.tecnico, tec)) itens.push(r);
+  }
+  return { cab, itens, diag };
+}
+
 
 /* =====================================================================
    TELA
@@ -859,10 +966,11 @@ const guarda = { get(k) { try { return localStorage.getItem('orc.' + k) || ''; }
 const qs = new URLSearchParams(location.search);
 const con = { url: qs.get('api') || guarda.get('url') || CFG.API_URL || '', chave: qs.get('chave') || guarda.get('chave') || '', quem: guarda.get('quem') };
 let R = null, P = null, RC = null, RA = null, HOJE = null, carregando = false;
+let CERT = null;   // aba Controle de Certificados: { estado: 'carregando'|'ok'|'erro', dados, erro }
 const st = { p: 'Todos', q: '', k: 'v', dir: -1, lim: 50, open: null, edit: null, msg: null,
   gOpen: null, gUnit: null, glim: 30,                       // grupos: grupo aberto, CNPJ aberto dentro dele
   calA: CFG.ANO, calM: null, nf: null,                      // mês do calendário, célula de NF aberta
-  ag: null, agF: 'Todos', agMsg: null };                    // agenda: visita aberta, filtro, mensagem após gravar
+  ag: null, agF: 'Todos', agMsg: null, eq: null };          // eq: visita com a lista de equipamentos aberta                    // agenda: visita aberta, filtro, mensagem após gravar
 
 function estado(tipo, texto) { $('#led').className = 'led ' + tipo; $('#sync').textContent = texto; }
 
@@ -878,6 +986,7 @@ async function carregar(silencioso) {
     if (!j.ok) throw new Error(j.erro || 'Não foi possível ler a planilha.');
     const agora = new Date();
     const hojeUTC = Date.UTC(agora.getFullYear(), agora.getMonth(), agora.getDate());
+    if (CERT && CERT.estado !== 'carregando') CERT = null;
     P = j; R = analisar(j, hojeUTC, CFG); RC = analisarContratos(j, hojeUTC, CFG); RA = analisarAgenda(j, RC, hojeUTC, CFG); HOJE = hojeUTC;
     R.Cmap = new Map(R.C.map(c => [c.id, c]));
     $('#fonte').textContent = 'Fonte: ' + j.planilha + '. Página aberta ' + (j.podeEditar ? 'com permissão de edição.' : 'somente para leitura.');
@@ -1180,9 +1289,54 @@ function agTabela() {
   $('#agTabTit').textContent = 'Visitas de ' + MES[m - 1] + ' de ' + a;
   const soma = k => evs.filter(e => e.status !== 'Cancelado').reduce((s, e) => s + (e.custos[k] || 0), 0);
   $('#tagm').innerHTML = `<thead><tr><th class="l">Data</th><th class="l">Tipo</th><th class="l">Contrato / cliente</th><th class="l">Local</th><th class="l">Técnico</th><th class="l">Status</th>${CUSTOS.map(c => `<th>${c[2]}</th>`).join('')}<th>Total</th></tr></thead><tbody>` +
-    (evs.length ? evs.map(e => `<tr data-ev="${esc(e.key)}" tabindex="0"><td class="l num">${DOW[new Date(e.t).getUTCDay()]} ${fmtD(e.t).slice(0, 5)}</td><td class="l">${e.tipo === 'Contrato' ? 'Contrato' : 'Orçamento'}</td><td class="l"><span class="dot" style="background:hsl(${corEv(e)} 60% 45%)"></span>${esc(e.nome)}${e.os ? `<br><span class="muted num" style="font-size:11.5px">OS ${esc(e.os)}</span>` : ''}</td><td class="l">${esc(e.local || '–')}</td><td class="l">${esc(e.tecnico || '–')}</td><td class="l">${esc(e.status)}</td>${CUSTOS.map(c => `<td class="num">${e.custos[c[0]] != null ? brl2(e.custos[c[0]]) : '<span class="muted">–</span>'}</td>`).join('')}<td class="num"><b>${e.temGastos ? brl2(e.total) : '<span class="muted">sem gastos</span>'}</b></td></tr>`).join('')
+    (evs.length ? evs.map(e => { const ab = st.eq === e.key; return `<tr data-ev="${esc(e.key)}" tabindex="0"${ab ? ' class="aberta"' : ''}><td class="l num" data-c="eq" title="Ver equipamentos da visita"><span class="chev" aria-hidden="true">${ab ? '▾' : '▸'}</span>${DOW[new Date(e.t).getUTCDay()]} ${fmtD(e.t).slice(0, 5)}</td><td class="l" data-c="eq">${e.tipo === 'Contrato' ? 'Contrato' : 'Orçamento'}</td><td class="l" data-c="eq"><span class="dot" style="background:hsl(${corEv(e)} 60% 45%)"></span>${esc(e.nome)}${e.os ? `<br><span class="muted num" style="font-size:11.5px">OS ${esc(e.os)}</span>` : ''}</td><td class="l" data-c="eq">${esc(e.local || '–')}</td><td class="l" data-c="eq">${esc(e.tecnico || '–')}</td><td class="l" data-c="ag" title="Abrir agendamento">${esc(e.status)}</td>${CUSTOS.map(c => `<td class="num" data-c="ag" title="Abrir agendamento">${e.custos[c[0]] != null ? brl2(e.custos[c[0]]) : '<span class="muted">–</span>'}</td>`).join('')}<td class="num" data-c="ag" title="Abrir agendamento"><b>${e.temGastos ? brl2(e.total) : '<span class="muted">sem gastos</span>'}</b></td></tr>` + (ab ? `<tr class="eqrow"><td colspan="${6 + CUSTOS.length + 1}"><div class="eqbox">${equipamentosHtml(e)}</div></td></tr>` : ''); }).join('')
       : `<tr><td colspan="${6 + CUSTOS.length + 1}" class="l muted">Nenhuma visita em ${MES[m - 1]}.${podeAg() ? ' Clique num dia do calendário para agendar.' : ''}</td></tr>`) +
     `</tbody><tfoot><tr><th class="l" colspan="6">Total do mês (sem canceladas)</th>${CUSTOS.map(c => `<th class="num">${brl2(soma(c[0]))}</th>`).join('')}<th class="num">${brl2(CUSTOS.reduce((s, c) => s + soma(c[0]), 0))}</th></tr></tfoot>`;
+}
+
+/* ---------- equipamentos da visita (aba Controle de Certificados) ---------- */
+async function carregarCert() {
+  if (CERT) return;
+  CERT = { estado: 'carregando' };
+  try {
+    const r = await fetch(con.url + (con.url.includes('?') ? '&' : '?') + 'chave=' + encodeURIComponent(con.chave) + '&aba=certificados&t=' + Date.now(), { redirect: 'follow' });
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.erro || 'Não foi possível ler a aba Controle de Certificados.');
+    if (!j.cert) throw new Error('O Apps Script publicado ainda não lê a aba “Controle de Certificados”. Publique a versão ' + VERSAO_SCRIPT_ESPERADA + ' do script (Implantar › Gerenciar implantações › Nova versão).');
+    CERT = { estado: 'ok', dados: j.cert };
+  } catch (err) {
+    CERT = { estado: 'erro', erro: (err instanceof TypeError) ? 'Não consegui ler a aba “Controle de Certificados”. Clique na linha de novo para tentar outra vez.' : err.message };
+  }
+  if (location.hash === '#agenda') agTabela();
+}
+
+function equipamentosHtml(e) {
+  if (!CERT) setTimeout(carregarCert, 0);                                // lista aberta após uma recarga: busca de novo
+  if (!CERT || CERT.estado === 'carregando') return '<p class="eqinfo">Lendo a aba “Controle de Certificados”…</p>';
+  if (CERT.estado === 'erro') return `<p class="eqinfo" style="color:var(--lost)">${esc(CERT.erro)}</p>`;
+  const nomes = [e.nome];
+  if (e.nomeAgenda) nomes.push(e.nomeAgenda);
+  if (e.tipo === 'Contrato') { const a = RA.agendaRef(e.nome); if (a.nome) nomes.push(a.nome); }
+  const r = certEquipamentos(CERT.dados, { t: e.t, tecnico: e.tecnico, nomes: [...new Set(nomes)] });
+  if (r.erro) return `<p class="eqinfo" style="color:var(--lost)">${esc(r.erro)}</p>`;
+  const crit = `Critérios: <b>Cliente</b> ${esc(e.nome)} · <b>Técnico</b> ${esc(e.tecnico || '(não informado)')} · <b>Data Criação</b> ${fmtD(e.t)}`;
+  if (!r.itens.length) {
+    const d = r.diag, por = [];
+    if (!e.tecnico) por.push('a visita não tem técnico informado: clique em Status ou nos gastos e preencha o técnico no agendamento');
+    if (!d.cliente) por.push('nenhum cliente da aba tem nome compatível com “' + esc(e.nome) + '”');
+    else if (!d.clienteData) por.push(`há ${d.cliente} equipamento${d.cliente > 1 ? 's' : ''} desse cliente na aba, mas nenhum com Data Criação ${fmtD(e.t)}`);
+    else {
+      por.push(`há ${d.clienteData} equipamento${d.clienteData > 1 ? 's' : ''} desse cliente com Data Criação ${fmtD(e.t)}`);
+      if (d.clienteDataSemTec) por.push(`${d.clienteDataSemTec} deles sem técnico preenchido na aba`);
+      if (e.tecnico && d.tecnicosNaData.size) por.push('técnico na aba: ' + esc([...d.tecnicosNaData].join(', ')));
+    }
+    return `<p class="eqinfo"><b>Nenhum equipamento encontrado para esta visita.</b> ${crit}.</p><p class="eqinfo">${por.map(x => x.charAt(0).toUpperCase() + x.slice(1)).join('. ')}.</p>`;
+  }
+  const cab = r.cab.map((h, i) => [h, i + 1]).filter(([h]) => h);
+  const critCols = new Set(['CLIENTE', 'TECNICO', 'DATA CRIACAO']);
+  return `<p class="eqinfo"><b>${r.itens.length} equipamento${r.itens.length > 1 ? 's' : ''}</b> · ${crit} · cliente na aba: ${esc([...r.diag.nomesCert].join('; '))}</p>
+    <div class="tw"><table><thead><tr><th class="l">Linha</th>${cab.map(([h]) => `<th class="l${critCols.has(certNorm(h)) ? ' crit' : ''}">${esc(h)}</th>`).join('')}</tr></thead><tbody>${
+      r.itens.map(x => `<tr><td class="l num muted">${x[0]}</td>${cab.map(([h, i]) => `<td class="l${critCols.has(certNorm(h)) ? ' crit' : ''}">${esc(x[i] || '')}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
 }
 
 function agNotas() {
@@ -1268,7 +1422,17 @@ $('#cal').addEventListener('click', ev => {
   const d = ev.target.closest('[data-novo]') || ev.target.closest('[data-dia]');
   if (d) abrirAg({ t: Date.UTC(st.calA, st.calM - 1, +(d.dataset.novo || d.dataset.dia)) });
 });
-$('#tagm').addEventListener('click', ev => { const tr = ev.target.closest('tr[data-ev]'); if (tr) abrirAg({ key: tr.dataset.ev }); });
+$('#tagm').addEventListener('click', ev => {
+  const tr = ev.target.closest('tr[data-ev]'); if (!tr) return;          // a linha da lista de equipamentos não tem data-ev
+  const td = ev.target.closest('td');
+  if (td && td.dataset.c === 'eq') {                                     // Data, Tipo, Contrato/cliente, Local, Técnico
+    st.eq = st.eq === tr.dataset.ev ? null : tr.dataset.ev;
+    agTabela();
+    if (st.eq) { carregarCert(); const nova = document.querySelector('#tagm tr.aberta'); if (nova) nova.scrollIntoView({ block: 'nearest' }); }
+    return;
+  }
+  abrirAg({ key: tr.dataset.ev });                                       // Status e gastos: formulário de sempre
+});
 $('#tagm').addEventListener('keydown', ev => { if (ev.key === 'Enter' && ev.target.matches('tr[data-ev]')) abrirAg({ key: ev.target.dataset.ev }); });
 $('#agFiltros').addEventListener('click', ev => { const b = ev.target.closest('[data-f]'); if (!b) return; st.agF = b.dataset.f; pintarAgenda(); });
 $('#agPainel').addEventListener('click', ev => {
@@ -1409,9 +1573,9 @@ $('#nfPainel').addEventListener('submit', e => {
   e.target.querySelectorAll('button,input').forEach(el => el.disabled = true);
   postNF({ acao: 'nf_salvar', linha: s.editLinha || 0, antes: s.editLinha ? assinatura(s.editLinha) : '', nf: { contrato: s.contrato, mes: s.m, ano: CFG.ANO, numero, data, valor: Math.round(valor * 100) / 100, obs: String(f.get('obs')).trim() } }, (s.editLinha ? 'NF ' + numero + ' corrigida.' : 'NF ' + numero + ' lançada.'));
 });
-$('#calAnt').onclick = () => { st.calM--; if (st.calM < 1) { st.calM = 12; st.calA--; } st.ag = null; calendario(); };
-$('#calProx').onclick = () => { st.calM++; if (st.calM > 12) { st.calM = 1; st.calA++; } st.ag = null; calendario(); };
-$('#calHoje').onclick = () => { const h = hojeD(); st.calA = h.getUTCFullYear(); st.calM = h.getUTCMonth() + 1; st.ag = null; calendario(); };
+$('#calAnt').onclick = () => { st.calM--; if (st.calM < 1) { st.calM = 12; st.calA--; } st.ag = null; st.eq = null; calendario(); };
+$('#calProx').onclick = () => { st.calM++; if (st.calM > 12) { st.calM = 1; st.calA++; } st.ag = null; st.eq = null; calendario(); };
+$('#calHoje').onclick = () => { const h = hojeD(); st.calA = h.getUTCFullYear(); st.calM = h.getUTCMonth() + 1; st.ag = null; st.eq = null; calendario(); };
 
 carregar();
 </script>
