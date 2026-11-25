@@ -176,6 +176,9 @@ button.vis:hover{background:hsl(var(--h) 60% 45% / .25)}
 #tagm tr.eqrow table th{background:var(--chip);position:static;cursor:default}
 #tagm tr.eqrow table td{white-space:nowrap;cursor:default}
 #tagm tr.eqrow .crit{background:color-mix(in srgb,var(--accent) 12%,var(--card))}
+.fl{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--mut)}
+.fl input,.fl select{font-size:13.5px;color:var(--fg)}
+.fl input[type=search]{flex:none;max-width:none}
 .eqbox{position:sticky;left:12px;max-width:calc(100vw - 300px)}
 @media (max-width:1000px){.eqbox{max-width:calc(100vw - 60px)}}
 .eqinfo{font-size:12.5px;color:var(--mut);margin:0 0 8px}
@@ -299,6 +302,13 @@ button.vis:hover{background:hsl(var(--h) 60% 45% / .25)}
 
   <section>
   <div><h2 id="agTabTit">Visitas do mês</h2><p class="sub">Clique em Data, Tipo, Contrato / cliente, Local ou Técnico para ver os equipamentos da visita (aba “Controle de Certificados”). Clique em Status ou nos gastos para abrir o agendamento.</p></div>
+  <div class="tools" id="agFil" style="margin:0 0 10px;align-items:flex-end">
+    <label class="fl">Data<select id="fDia" aria-label="Filtrar por data"></select></label>
+    <label class="fl" style="flex:1 1 240px;max-width:360px">Cliente / contrato<input type="search" id="fCli" list="fCliLista" placeholder="Nome, OS ou local" aria-label="Filtrar por cliente ou contrato" style="max-width:none"><datalist id="fCliLista"></datalist></label>
+    <label class="fl">Técnico<select id="fTec" aria-label="Filtrar por técnico"></select></label>
+    <button type="button" id="fLimpar" hidden>Limpar filtros</button>
+    <span class="muted" id="fConta" style="font-size:12.5px;padding-bottom:6px"></span>
+  </div>
   <div class="tw"><table id="tagm"></table></div>
   </section>
 
@@ -970,7 +980,8 @@ let CERT = null;   // aba Controle de Certificados: { estado: 'carregando'|'ok'|
 const st = { p: 'Todos', q: '', k: 'v', dir: -1, lim: 50, open: null, edit: null, msg: null,
   gOpen: null, gUnit: null, glim: 30,                       // grupos: grupo aberto, CNPJ aberto dentro dele
   calA: CFG.ANO, calM: null, nf: null,                      // mês do calendário, célula de NF aberta
-  ag: null, agF: 'Todos', agMsg: null, eq: null };          // eq: visita com a lista de equipamentos aberta                    // agenda: visita aberta, filtro, mensagem após gravar
+  ag: null, agF: 'Todos', agMsg: null, eq: null,
+  fDia: '', fCli: '', fTec: '' };   // filtros da tabela Visitas do mês          // eq: visita com a lista de equipamentos aberta                    // agenda: visita aberta, filtro, mensagem após gravar
 
 function estado(tipo, texto) { $('#led').className = 'led ' + tipo; $('#sync').textContent = texto; }
 
@@ -1284,14 +1295,40 @@ function agKpis() {
   ].map(k => `<div class="kpi"><b>${k[0]}</b><span>${k[2] ? `<i style="background:var(${k[2]})"></i>` : ''}${k[1]}</span></div>`).join('');
 }
 
+/* filtros da tabela: data, cliente/contrato (nome, OS ou local) e técnico */
+const tecNomes = s => String(s || '').split(/\s*[\/,;&+]\s*|\s+e\s+/i).map(x => x.trim()).filter(Boolean);
+function filtrosTabela(todos) {
+  const dias = [...new Set(todos.map(e => e.t))].sort((x, y) => x - y);
+  if (st.fDia && !dias.includes(+st.fDia)) st.fDia = '';
+  $('#fDia').innerHTML = `<option value="">Todas as datas</option>` + dias.map(t => `<option value="${t}"${String(t) === st.fDia ? ' selected' : ''}>${DOW[new Date(t).getUTCDay()]} ${fmtD(t).slice(0, 5)} (${todos.filter(e => e.t === t).length})</option>`).join('');
+  const tecs = new Map();
+  todos.forEach(e => tecNomes(e.tecnico).forEach(n => { const k = certNorm(n); if (!tecs.has(k)) tecs.set(k, n); }));
+  if (st.fTec && st.fTec !== '-' && !tecs.has(st.fTec)) st.fTec = '';
+  const lt = [...tecs].sort((x, y) => x[1].localeCompare(y[1], 'pt-BR'));
+  const semTec = todos.some(e => !tecNomes(e.tecnico).length);
+  if (st.fTec === '-' && !semTec) st.fTec = '';
+  $('#fTec').innerHTML = `<option value="">Todos</option>` + lt.map(([k, n]) => `<option value="${esc(k)}"${k === st.fTec ? ' selected' : ''}>${esc(n)}</option>`).join('') + (semTec ? `<option value="-"${st.fTec === '-' ? ' selected' : ''}>Sem técnico</option>` : '');
+  $('#fCliLista').innerHTML = [...new Set(todos.map(e => e.nome))].sort().map(n => `<option value="${esc(n)}">`).join('');
+  if ($('#fCli').value !== st.fCli) $('#fCli').value = st.fCli;
+  const q = certNorm(st.fCli);
+  const ok = e => (!st.fDia || e.t === +st.fDia)
+    && (!q || certNorm([e.nome, e.nomeAgenda, e.os ? 'OS ' + e.os : '', e.local].join(' ')).includes(q))
+    && (!st.fTec || (st.fTec === '-' ? !tecNomes(e.tecnico).length : tecNomes(e.tecnico).some(n => certNorm(n) === st.fTec)));
+  const evs = todos.filter(ok), ativo = !!(st.fDia || q || st.fTec);
+  $('#fLimpar').hidden = !ativo;
+  $('#fConta').textContent = ativo ? `${evs.length} de ${todos.length} visita${todos.length === 1 ? '' : 's'}` : '';
+  return { evs, ativo };
+}
+
 function agTabela() {
-  const a = st.calA, m = st.calM, evs = doMes(a, m).filter(filtroOk);
+  const a = st.calA, m = st.calM, { evs, ativo } = filtrosTabela(doMes(a, m).filter(filtroOk));
+  if (st.eq && !evs.some(e => e.key === st.eq)) st.eq = null;
   $('#agTabTit').textContent = 'Visitas de ' + MES[m - 1] + ' de ' + a;
   const soma = k => evs.filter(e => e.status !== 'Cancelado').reduce((s, e) => s + (e.custos[k] || 0), 0);
   $('#tagm').innerHTML = `<thead><tr><th class="l">Data</th><th class="l">Tipo</th><th class="l">Contrato / cliente</th><th class="l">Local</th><th class="l">Técnico</th><th class="l">Status</th>${CUSTOS.map(c => `<th>${c[2]}</th>`).join('')}<th>Total</th></tr></thead><tbody>` +
     (evs.length ? evs.map(e => { const ab = st.eq === e.key; return `<tr data-ev="${esc(e.key)}" tabindex="0"${ab ? ' class="aberta"' : ''}><td class="l num" data-c="eq" title="Ver equipamentos da visita"><span class="chev" aria-hidden="true">${ab ? '▾' : '▸'}</span>${DOW[new Date(e.t).getUTCDay()]} ${fmtD(e.t).slice(0, 5)}</td><td class="l" data-c="eq">${e.tipo === 'Contrato' ? 'Contrato' : 'Orçamento'}</td><td class="l" data-c="eq"><span class="dot" style="background:hsl(${corEv(e)} 60% 45%)"></span>${esc(e.nome)}${e.os ? `<br><span class="muted num" style="font-size:11.5px">OS ${esc(e.os)}</span>` : ''}</td><td class="l" data-c="eq">${esc(e.local || '–')}</td><td class="l" data-c="eq">${esc(e.tecnico || '–')}</td><td class="l" data-c="ag" title="Abrir agendamento">${esc(e.status)}</td>${CUSTOS.map(c => `<td class="num" data-c="ag" title="Abrir agendamento">${e.custos[c[0]] != null ? brl2(e.custos[c[0]]) : '<span class="muted">–</span>'}</td>`).join('')}<td class="num" data-c="ag" title="Abrir agendamento"><b>${e.temGastos ? brl2(e.total) : '<span class="muted">sem gastos</span>'}</b></td></tr>` + (ab ? `<tr class="eqrow"><td colspan="${6 + CUSTOS.length + 1}"><div class="eqbox">${equipamentosHtml(e)}</div></td></tr>` : ''); }).join('')
-      : `<tr><td colspan="${6 + CUSTOS.length + 1}" class="l muted">Nenhuma visita em ${MES[m - 1]}.${podeAg() ? ' Clique num dia do calendário para agendar.' : ''}</td></tr>`) +
-    `</tbody><tfoot><tr><th class="l" colspan="6">Total do mês (sem canceladas)</th>${CUSTOS.map(c => `<th class="num">${brl2(soma(c[0]))}</th>`).join('')}<th class="num">${brl2(CUSTOS.reduce((s, c) => s + soma(c[0]), 0))}</th></tr></tfoot>`;
+      : `<tr><td colspan="${6 + CUSTOS.length + 1}" class="l muted">${ativo ? 'Nenhuma visita com esses filtros.' : `Nenhuma visita em ${MES[m - 1]}.${podeAg() ? ' Clique num dia do calendário para agendar.' : ''}`}</td></tr>`) +
+    `</tbody><tfoot><tr><th class="l" colspan="6">${ativo ? 'Total das visitas filtradas' : 'Total do mês'} (sem canceladas)</th>${CUSTOS.map(c => `<th class="num">${brl2(soma(c[0]))}</th>`).join('')}<th class="num">${brl2(CUSTOS.reduce((s, c) => s + soma(c[0]), 0))}</th></tr></tfoot>`;
 }
 
 /* ---------- equipamentos da visita (aba Controle de Certificados) ---------- */
@@ -1423,6 +1460,10 @@ $('#cal').addEventListener('click', ev => {
   const d = ev.target.closest('[data-novo]') || ev.target.closest('[data-dia]');
   if (d) abrirAg({ t: Date.UTC(st.calA, st.calM - 1, +(d.dataset.novo || d.dataset.dia)) });
 });
+$('#fDia').addEventListener('change', ev => { st.fDia = ev.target.value; agTabela(); });
+$('#fTec').addEventListener('change', ev => { st.fTec = ev.target.value; agTabela(); });
+$('#fCli').addEventListener('input', ev => { st.fCli = ev.target.value; agTabela(); });
+$('#fLimpar').addEventListener('click', () => { st.fDia = st.fCli = st.fTec = ''; agTabela(); });
 $('#tagm').addEventListener('click', ev => {
   const tr = ev.target.closest('tr[data-ev]'); if (!tr) return;          // a linha da lista de equipamentos não tem data-ev
   const td = ev.target.closest('td');
