@@ -10,6 +10,8 @@
 <style>
 :root{--bg:#f3f5f6;--card:#ffffff;--fg:#17232b;--mut:#5c6b75;--line:#d6dde1;--accent:#0b6e7d;--ok:#1f8a5b;--rec:#5aa7b8;--dup:#9aa7b0;--vc:#b9892b;--lost:#c2452f;--canc:#8a5a52;--open:#d9a441;--open2:#e9cf96;--chip:#e6ecef;
 --sans:"IBM Plex Sans",system-ui,sans-serif;--cond:"IBM Plex Sans Condensed","IBM Plex Sans",system-ui,sans-serif;--mono:"IBM Plex Mono",ui-monospace,monospace}
+:root{--s1:#257de0;--s2:#f47230;--s3:#00b894;--s4:#f2a600;--s5:#ee7fac;--s6:#008a17;--s7:#6a4ce2;--s8:#ec4647;--sn:#9aa7b0}
+@media (prefers-color-scheme:dark){:root{--s1:#338ced;--s2:#e76624;--s3:#00a888;--s4:#d28e05;--s5:#e24d8b;--s6:#0aac23;--s7:#9887ef;--s8:#eb6263;--sn:#6f7c85}}
 @media (prefers-color-scheme:dark){:root{--bg:#11181c;--card:#1a2328;--fg:#e6edf0;--mut:#9aa9b2;--line:#2f3b42;--accent:#4fb6c6;--ok:#46b783;--rec:#6fbccb;--dup:#6f7c85;--vc:#d1a54a;--lost:#e2674f;--canc:#b07f76;--open:#e0b25a;--open2:#8a744a;--chip:#26323a;color-scheme:dark}}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
@@ -176,6 +178,34 @@ button.vis:hover{background:hsl(var(--h) 60% 45% / .25)}
 #tagm tr.eqrow table th{background:var(--chip);position:static;cursor:default}
 #tagm tr.eqrow table td{white-space:nowrap;cursor:default}
 #tagm tr.eqrow .crit{background:color-mix(in srgb,var(--accent) 12%,var(--card))}
+.igrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(420px,1fr));gap:12px;margin:12px 0 0}
+.icard{background:var(--card);border:1px solid var(--line);padding:14px 16px;min-width:0}
+.icard h3{margin:0 0 2px;font-size:14px}
+.igrid .rosca{max-width:none}
+.icard .sub{margin:0 0 8px;font-size:12px}
+.icard svg{display:block;width:100%;height:auto;overflow:visible}
+.icard svg .col:hover rect.b{opacity:.8}
+.icard svg .col:hover rect.hit{fill:var(--chip);opacity:.5}
+.icard details{margin-top:6px;font-size:12px}
+.icard details table{font-size:12px;margin-top:6px}
+.ileg{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--mut);margin:0 0 6px}
+.ileg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.inota{font-size:12px;color:var(--mut);margin:8px 0 0}
+.icard .tw table td,.icard .tw table th{white-space:nowrap}
+.icard .tw table td.l{white-space:normal;min-width:160px}
+.icard .cnpj{display:block;color:var(--mut);font-size:11px;font-variant-numeric:tabular-nums}
+@media (max-width:700px){.igrid{grid-template-columns:1fr}}
+.eqgraf{display:flex;flex-wrap:wrap;gap:12px;margin:0 0 10px}
+.rosca{display:flex;gap:16px;align-items:center;background:var(--card);border:1px solid var(--line);padding:12px 16px;flex:1 1 300px;max-width:460px}
+.rosca h4{margin:0 0 6px;font-size:13px}
+.rosca svg{flex:none}
+.rosca svg .seg{transition:opacity .15s}
+.rosca:hover svg .seg:not(:hover){opacity:.55}
+.rosca ul{list-style:none;margin:0;padding:0;font-size:12.5px;display:grid;gap:4px}
+.rosca li{display:grid;grid-template-columns:10px 1fr auto auto;gap:6px 8px;align-items:center}
+.rosca li i{width:10px;height:10px;border-radius:2px}
+.rosca li b{font-variant-numeric:tabular-nums}
+.rosca li span.n{color:var(--mut);font-variant-numeric:tabular-nums}
 .fl{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--mut)}
 .fl input,.fl select{font-size:13.5px;color:var(--fg)}
 .fl input[type=search]{flex:none;max-width:none}
@@ -195,6 +225,7 @@ button.vis:hover{background:hsl(var(--h) 60% 45% / .25)}
   <a href="#grupos" class="sub" data-v="grupos">Grupos com várias unidades</a>
   <a href="#contratos" data-v="contratos">Contratos e faturamento</a>
   <a href="#agenda" data-v="agenda">Agenda de visitas e gastos</a>
+  <a href="#indicadores" data-v="indicadores">Indicadores</a>
 </nav>
 <div class="wrap">
 <header class="top">
@@ -315,6 +346,32 @@ button.vis:hover{background:hsl(var(--h) 60% 45% / .25)}
   <div id="calNotas"></div>
   <details><summary>Visão do ano da aba “Controle agendamento contratos ativos”</summary><div class="tw" style="margin-top:8px"><table id="tag"></table></div></details>
   <datalist id="dlOS"></datalist><datalist id="dlTec"></datalist><datalist id="dlLocal"></datalist>
+</div>
+</div>
+<div id="vInd" hidden>
+<div class="wrap" style="padding:0">
+  <section>
+    <h2>Calibrações</h2>
+    <p class="sub">Aba “Controle de Certificados”, pela Data Criação de cada equipamento.</p>
+    <div class="tools" id="iFil" style="margin:0 0 12px;align-items:flex-end">
+      <label class="fl">Ano<select id="iAno"></select></label>
+      <label class="fl">Mês<select id="iMes"></select></label>
+      <label class="fl" style="flex:1 1 220px;max-width:340px">Cliente<input type="search" id="iCli" list="iCliLista" placeholder="Parte do nome"><datalist id="iCliLista"></datalist></label>
+      <label class="fl">Técnico<select id="iTec"></select></label>
+      <button type="button" id="iLimpar" hidden>Limpar filtros</button>
+    </div>
+    <div id="indCal"></div>
+  </section>
+  <section>
+    <h2 id="indOrcTit">Orçamentos</h2>
+    <p class="sub">Relação de orçamentos, pela Data Criação. Conversão = aprovados ÷ (aprovados + não aprovados + cancelados); os em aberto ficam de fora.</p>
+    <div id="indOrc"></div>
+  </section>
+  <section>
+    <h2 id="indConTit">Contratos</h2>
+    <p class="sub">Abas Contratos, Emissão de NFs e Agendamentos e gastos.</p>
+    <div id="indCon"></div>
+  </section>
 </div>
 </div>
 </div>
@@ -641,7 +698,7 @@ function analisarContratos(P, hoje, CFG) {
     // meses em que se espera NF: do início ao término (sem término e com renovação automática: sem limite)
     const iniIdx = ini ? mesIdx(ini.a, ini.m) : null, fimIdx = fim ? mesIdx(fim.a, fim.m) : (renova ? Infinity : null);
     const esperaNF = (a, m) => { if (situacao === 'Sem vigência informada' || iniIdx == null || fimIdx == null) return false; const k = mesIdx(a, m); if (situacao === 'Encerrado' && fim == null) return false; return k >= iniIdx && k <= fimIdx; };
-    return { i, linha: r[0], nome, iniTxt, fimTxt, ini: fmtMA(ini) || iniTxt, fim: fmtMA(fim) || fimTxt, valor, forma, pgtoTxt, parcela, periodicidade: cel(r, c['Periodicidade de Visitas']), pasta: cel(r, c['Caminho_Pasta']), situacao, vigente, esperaNF };
+    return { i, linha: r[0], nome, iniTxt, fimTxt, ini: fmtMA(ini) || iniTxt, fim: fmtMA(fim) || fimTxt, valor, forma, pgtoTxt, parcela, periodicidade: cel(r, c['Periodicidade de Visitas']), pasta: cel(r, c['Caminho_Pasta']), situacao, vigente, esperaNF, fimMA: fim, renova };
   }).filter(Boolean);
   contratos.forEach((k, j) => k.cor = Math.round((j * 137.508) % 360));
 
@@ -959,6 +1016,92 @@ function certEquipamentos(cert, visita) {
   return { cab, itens, diag };
 }
 
+/* =====================================================================
+   INDICADORES – cálculos (sem desenho). Usados pela seção "Indicadores".
+   ===================================================================== */
+const IND_DIA = 86400000;
+function indData(s) {
+  const m = /^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/.exec(String(s || '').trim()); if (!m) return null;
+  let y = +m[3]; if (y < 100) y += 2000;
+  const t = Date.UTC(y, +m[2] - 1, +m[1]), d = new Date(t);
+  return d.getUTCDate() === +m[1] && d.getUTCMonth() === +m[2] - 1 ? t : null;
+}
+const indNorm = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toUpperCase().replace(/[^A-Z0-9]+/g, ' ').trim();
+const indTecs = s => String(s || '').split(/\s*[\/,;&+]\s*|\s+e\s+/i).map(x => x.trim()).filter(Boolean);
+
+/* ---------- Calibrações: aba Controle de Certificados ----------
+   f = { ano, mes (0 = todos), cli (texto), tec ('' todos, '-' sem técnico, ou nome normalizado) } */
+function indCalibracoes(cert, f) {
+  const cab = cert.cab || [], ix = t => cab.findIndex(h => indNorm(h) === indNorm(t)) + 1;
+  const c = { cli: ix('Cliente'), tec: ix('Técnico'), cria: ix('Data Criação'), lib: ix('Data da Checagem'), corr: ix('Correção'), erro: ix('Tipo de erro') };
+  const faltam = Object.entries({ Cliente: c.cli, 'Data Criação': c.cria, 'Data da Checagem': c.lib, 'Correção': c.corr, 'Tipo de erro': c.erro }).filter(([, i]) => !i).map(([k]) => k);
+  if (faltam.length) return { erro: 'Colunas não encontradas na aba Controle de Certificados: ' + faltam.join(', ') };
+  const linhas = cert.linhas.map(r => ({ r, t: indData(r[c.cria]), lib: indData(r[c.lib]), cli: String(r[c.cli] || '').trim(), tec: c.tec ? String(r[c.tec] || '').trim() : '' }));
+  const anos = [...new Set(linhas.filter(x => x.t != null).map(x => new Date(x.t).getUTCFullYear()))].sort();
+  const tecnicos = new Map(); linhas.forEach(x => indTecs(x.tec).forEach(n => { const k = indNorm(n); if (!tecnicos.has(k)) tecnicos.set(k, n); }));
+  const q = indNorm(f.cli);
+  const doAno = linhas.filter(x => x.t != null && new Date(x.t).getUTCFullYear() === f.ano
+    && (!q || indNorm(x.cli).includes(q))
+    && (!f.tec || (f.tec === '-' ? !indTecs(x.tec).length : indTecs(x.tec).some(n => indNorm(n) === f.tec))));
+  const porMes = Array.from({ length: 12 }, (_, i) => ({ m: i + 1, n: 0, dias: 0, nDias: 0, neg: 0 }));
+  for (const x of doAno) {
+    const p = porMes[new Date(x.t).getUTCMonth()]; p.n++;
+    if (x.lib != null) { const d = Math.round((x.lib - x.t) / IND_DIA); if (d < 0) p.neg++; else { p.dias += d; p.nDias++; } }
+  }
+  porMes.forEach(p => p.media = p.nDias ? p.dias / p.nDias : null);
+  const sel = f.mes ? doAno.filter(x => new Date(x.t).getUTCMonth() + 1 === f.mes) : doAno;
+  const pm = f.mes ? [porMes[f.mes - 1]] : porMes;
+  const nDias = pm.reduce((s, p) => s + p.nDias, 0);
+  const corr = sel.map(x => x.r[c.corr]), tiposErro = sel.map(x => x.r[c.erro]);
+  return {
+    anos, tecnicos: [...tecnicos].sort((a, b) => a[1].localeCompare(b[1], 'pt-BR')), semTecnico: linhas.some(x => !indTecs(x.tec).length),
+    clientes: [...new Set(linhas.map(x => x.cli))].sort((a, b) => a.localeCompare(b, 'pt-BR')),
+    porMes, n: sel.length, corr, tiposErro,
+    comCorrecao: corr.filter(v => indNorm(v) === 'SIM').length,
+    mediaDias: nDias ? pm.reduce((s, p) => s + p.dias, 0) / nDias : null, nDias, neg: pm.reduce((s, p) => s + p.neg, 0),
+    semData: linhas.filter(x => x.t == null).length
+  };
+}
+
+/* ---------- Orçamentos: relação de orçamentos do ano ---------- */
+function indOrcamentos(R, ano) {
+  const porMes = Array.from({ length: 12 }, (_, i) => ({ m: i + 1, n: 0, ap: 0, nao: 0, canc: 0, ag: 0, va: 0, vp: 0, vn: 0 }));
+  for (const q of R.Q) {
+    if (q.dataCriacao == null || new Date(q.dataCriacao).getUTCFullYear() !== ano) continue;
+    const p = porMes[new Date(q.dataCriacao).getUTCMonth()]; p.n++;
+    if (q.status === 'APROVADO') { p.ap++; p.va += q.valor; }
+    else if (q.status === 'NÃO APROVADA') { p.nao++; p.vn += q.valor; }
+    else if (q.status === 'CANCELADA') p.canc++;
+    else p.ag++;
+    if (q.grupo === 'Perdido') p.vp += q.valor;
+  }
+  porMes.forEach(p => { const dec = p.ap + p.nao + p.canc; p.dec = dec; p.conv = dec ? p.ap / dec : null; });
+  const tot = porMes.reduce((s, p) => ({ ap: s.ap + p.ap, dec: s.dec + p.dec, va: s.va + p.va, vp: s.vp + p.vp, n: s.n + p.n }), { ap: 0, dec: 0, va: 0, vp: 0, n: 0 });
+  const semData = R.Q.filter(q => q.dataCriacao == null).length;
+  const topAprov = R.C.filter(c => c.na > 0).sort((a, b) => b.va - a.va).slice(0, 10);
+  const semFechar = R.C.filter(c => c.na === 0 && c.n - c.ng > 0).sort((a, b) => (b.n - a.n) || (b.v - a.v)).slice(0, 10);
+  return { porMes, tot, conv: tot.dec ? tot.ap / tot.dec : null, semData, topAprov, semFechar };
+}
+
+/* ---------- Contratos: faturado × previsto, gastos e margem, vencimentos ---------- */
+function indContratos(RC, RA, ano, hoje) {
+  const g = RC.grade(ano);
+  const porMes = Array.from({ length: 12 }, (_, i) => ({ m: i + 1, prev: 0, fat: 0 }));
+  for (const r of g) r.meses.forEach(x => { const p = porMes[x.m - 1]; p.fat += x.soma; if (x.espera && r.k.parcela) p.prev += r.k.parcela; });
+  const pc = RA.porContrato(ano);
+  const tabela = g.filter(r => r.fat || r.prev || pc.has(r.k.nome)).map(r => {
+    const v = pc.get(r.k.nome) || { visitas: 0, gastos: 0, comGastos: 0 };
+    const resultado = r.fat - v.gastos;
+    return { nome: r.k.nome, situacao: r.k.situacao, fat: r.fat, prev: r.prev, visitas: v.visitas, comGastos: v.comGastos, gastos: v.gastos,
+      medio: v.comGastos ? v.gastos / v.comGastos : null, resultado, margem: r.fat ? resultado / r.fat : null };
+  }).sort((a, b) => b.fat - a.fat);
+  const fimData = k => { const f = k.fimMA; if (!f || f.soAno) return null; return f.d ? Date.UTC(f.a, f.m - 1, f.d) : Date.UTC(f.a, f.m, 0); };
+  const vence = RC.contratos.filter(k => k.situacao !== 'Encerrado' && !k.renova).map(k => ({ k, t: fimData(k) })).filter(x => x.t != null)
+    .map(x => ({ nome: x.k.nome, situacao: x.k.situacao, fim: x.t, dias: Math.round((x.t - hoje) / IND_DIA), valor: x.k.valor, parcela: x.k.parcela }));
+  return { porMes, tabela, aVencer: vence.filter(x => x.dias >= 0 && x.dias <= 90).sort((a, b) => a.dias - b.dias),
+    vencidos: vence.filter(x => x.dias < 0).sort((a, b) => b.dias - a.dias) };
+}
+
 
 /* =====================================================================
    TELA
@@ -1176,7 +1319,7 @@ const DOW = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 const COR_SIT = { 'Vigente': '--ok', 'Em renovação': '--open', 'Vencido': '--lost', 'Encerrado': '--dup', 'Sem vigência informada': '--vc' };
 const hojeD = () => new Date(HOJE);
 
-const VIEWS = { orcamentos: ['app', 'Painel de orçamentos'], contratos: ['vContratos', 'Contratos e faturamento'], agenda: ['vAgenda', 'Agenda de visitas e gastos'] };
+const VIEWS = { orcamentos: ['app', 'Painel de orçamentos'], contratos: ['vContratos', 'Contratos e faturamento'], agenda: ['vAgenda', 'Agenda de visitas e gastos'], indicadores: ['vInd', 'Indicadores'] };
 function rota(rolarParaTopo) {
   if (!R) return;
   const h = (location.hash || '#orcamentos').slice(1);
@@ -1187,10 +1330,116 @@ function rota(rolarParaTopo) {
   document.querySelectorAll('#menu a').forEach(a => a.setAttribute('aria-current', a.dataset.v === (VIEWS[h] ? h : (h === 'clientes' || h === 'grupos' ? h : 'orcamentos')) ? 'page' : 'false'));
   const ativo = document.querySelector('#menu a[aria-current="page"]'), menu = $('#menu');
   if (ativo && menu.scrollWidth > menu.clientWidth) menu.scrollLeft = ativo.offsetLeft - 12;
-  if (v === 'contratos') pintarContratos(); else if (v === 'agenda') pintarAgenda(); else pintar();
+  if (v === 'contratos') pintarContratos(); else if (v === 'agenda') pintarAgenda(); else if (v === 'indicadores') pintarIndicadores(); else pintar();
   if (h === 'clientes' || h === 'grupos') { if (rolarParaTopo) $(h === 'clientes' ? '#secClientes' : '#secGrupos').scrollIntoView(); }
   else if (rolarParaTopo) window.scrollTo(0, 0);
 }
+
+/* ---------- Indicadores ---------- */
+const ind = { ano: null, mes: 0, cli: '', tec: '' };
+const nf1 = v => v.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+const pct1 = v => v == null ? '–' : nf1(v * 100) + '%';
+const brlK = v => Math.abs(v) >= 1000 ? 'R$ ' + (v / 1000).toLocaleString('pt-BR', { maximumFractionDigits: v >= 100000 ? 0 : 1 }) + ' mil' : 'R$ ' + Math.round(v).toLocaleString('pt-BR');
+
+/* gráfico de colunas: uma ou mais séries lado a lado, por mês */
+function colunasHtml({ titulo, sub, series, fmt, fmtEixo, rotulos, nota, destaque }) {
+  const W = 640, H = 230, ml = 52, mr = 8, mt = 18, mb = 24, n = 12, pw = W - ml - mr, ph = H - mt - mb;
+  const max = Math.max(0, ...series.flatMap(s => s.vals.map(v => v || 0)));
+  const passo = (() => { if (!max) return 1; const r = max / 4, p = Math.pow(10, Math.floor(Math.log10(r))); return [1, 2, 2.5, 5, 10].map(k => k * p).find(k => k >= r); })();
+  const topo = Math.max(passo * Math.ceil(max / passo), passo), y = v => mt + ph - (v / topo) * ph;
+  const cw = pw / n, gap = 2, bw = Math.min(28, (cw * 0.7 - gap * (series.length - 1)) / series.length);
+  const fe = fmtEixo || fmt;
+  let g = '';
+  for (let v = 0; v <= topo + 1e-9; v += passo) g += `<line x1="${ml}" x2="${W - mr}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)" stroke-width="1"/><text x="${ml - 6}" y="${y(v) + 4}" text-anchor="end" font-size="11" fill="var(--mut)">${fe(v)}</text>`;
+  const cols = MES3.map((rot, i) => {
+    const x0 = ml + i * cw, bx = x0 + (cw - (bw * series.length + gap * (series.length - 1))) / 2;
+    const dica = MES[i] + ': ' + series.map(s => (series.length > 1 ? s.nome + ' ' : '') + (s.vals[i] == null ? '–' : fmt(s.vals[i]))).join(' · ');
+    const barras = series.map((s, j) => { const v = s.vals[i]; if (!v) return ''; const h = Math.max(1, ph * v / topo); return `<rect class="b" x="${bx + j * (bw + gap)}" y="${y(v)}" width="${bw}" height="${h}" rx="3" fill="${s.cor}"/>`; }).join('');
+    const lab = rotulos && series.length === 1 && series[0].vals[i] ? `<text x="${x0 + cw / 2}" y="${y(series[0].vals[i]) - 5}" text-anchor="middle" font-size="10.5" fill="var(--fg)">${rotulos(series[0].vals[i])}</text>` : '';
+    return `<g class="col"><title>${esc(dica)}</title><rect class="hit" x="${x0}" y="${mt}" width="${cw}" height="${ph}" fill="transparent"/>${barras}${lab}<text x="${x0 + cw / 2}" y="${H - 6}" text-anchor="middle" font-size="11" fill="${destaque === i + 1 ? 'var(--fg)' : 'var(--mut)'}" ${destaque === i + 1 ? 'font-weight="700"' : ''}>${rot}</text></g>`;
+  }).join('');
+  const leg = series.length > 1 ? `<div class="ileg">${series.map(s => `<span><i style="background:${s.cor}"></i>${esc(s.nome)}</span>`).join('')}</div>` : '';
+  const tab = `<details><summary>Ver números</summary><div class="tw"><table><thead><tr><th class="l">Mês</th>${series.map(s => `<th>${esc(s.nome)}</th>`).join('')}</tr></thead><tbody>${MES3.map((r, i) => `<tr><td class="l">${MES[i]}</td>${series.map(s => `<td class="num">${s.vals[i] == null ? '–' : fmt(s.vals[i])}</td>`).join('')}</tr>`).join('')}</tbody></table></div></details>`;
+  return `<div class="icard"><h3>${esc(titulo)}</h3>${sub ? `<p class="sub">${sub}</p>` : ''}${leg}<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(titulo)}">${g}<line x1="${ml}" x2="${W - mr}" y1="${y(0)}" y2="${y(0)}" stroke="var(--mut)" stroke-width="1"/>${cols}</svg>${nota ? `<p class="inota">${nota}</p>` : ''}${tab}</div>`;
+}
+
+function pintarIndicadores() {
+  pintarIndCal(); pintarIndOrc(); pintarIndCon();
+}
+
+function pintarIndCal() {
+  const alvo = $('#indCal');
+  if (!CERT || CERT.estado === 'carregando') { if (!CERT) setTimeout(carregarCert, 0); alvo.innerHTML = '<p class="eqinfo">Lendo a aba “Controle de Certificados”…</p>'; return; }
+  if (CERT.estado === 'erro') { alvo.innerHTML = `<p class="eqinfo" style="color:var(--lost)">${esc(CERT.erro)}</p>`; return; }
+  const base = indCalibracoes(CERT.dados, { ano: 0, mes: 0, cli: '', tec: '' });
+  if (base.erro) { alvo.innerHTML = `<p class="eqinfo" style="color:var(--lost)">${esc(base.erro)}</p>`; return; }
+  if (!base.anos.length) { alvo.innerHTML = '<p class="eqinfo">A aba não tem equipamentos com Data Criação.</p>'; return; }
+  if (!base.anos.includes(ind.ano)) ind.ano = base.anos.includes(CFG.ANO) ? CFG.ANO : base.anos[base.anos.length - 1];
+  if (ind.tec && ind.tec !== '-' && !base.tecnicos.some(([k]) => k === ind.tec)) ind.tec = '';
+  $('#iAno').innerHTML = base.anos.map(a => `<option${a === ind.ano ? ' selected' : ''}>${a}</option>`).join('');
+  $('#iMes').innerHTML = `<option value="0">Todos</option>` + MES.map((m, i) => `<option value="${i + 1}"${ind.mes === i + 1 ? ' selected' : ''}>${m}</option>`).join('');
+  $('#iTec').innerHTML = `<option value="">Todos</option>` + base.tecnicos.map(([k, n]) => `<option value="${esc(k)}"${k === ind.tec ? ' selected' : ''}>${esc(n)}</option>`).join('') + (base.semTecnico ? `<option value="-"${ind.tec === '-' ? ' selected' : ''}>Sem técnico</option>` : '');
+  $('#iCliLista').innerHTML = base.clientes.map(n => `<option value="${esc(n)}">`).join('');
+  if ($('#iCli').value !== ind.cli) $('#iCli').value = ind.cli;
+  $('#iLimpar').hidden = !(ind.mes || ind.cli || ind.tec);
+  const c = indCalibracoes(CERT.dados, ind);
+  const periodo = ind.mes ? MES[ind.mes - 1] + ' de ' + ind.ano : String(ind.ano);
+  const kpis = `<div class="kpis">${[
+    [c.n.toLocaleString('pt-BR'), 'equipamentos · ' + periodo],
+    [c.n ? pct1(c.comCorrecao / c.n) : '–', c.comCorrecao.toLocaleString('pt-BR') + ' com correção'],
+    [c.mediaDias == null ? '–' : nf1(c.mediaDias) + ' dias', 'tempo médio da Data Criação até a liberação']
+  ].map(k => `<div class="kpi"><b>${k[0]}</b><span>${k[1]}</span></div>`).join('')}</div>`;
+  const roscas = c.n ? `<div class="igrid" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr))">${roscaHtml('Correção', contarCategorias('Correção', c.corr))}${roscaHtml('Tipo de erro', contarCategorias('Tipo de erro', c.tiposErro))}</div>` : '<p class="eqinfo" style="margin-top:12px">Nenhum equipamento com esses filtros.</p>';
+  const notaNeg = c.neg ? `${c.neg} equipamento${c.neg > 1 ? 's têm' : ' tem'} data de liberação anterior à Data Criação e ${c.neg > 1 ? 'ficaram' : 'ficou'} fora da média.` : '';
+  const graf = `<div class="igrid">${colunasHtml({ titulo: 'Equipamentos por mês', sub: 'Quantidade de equipamentos pela Data Criação, ' + ind.ano + '.', series: [{ nome: 'Equipamentos', cor: 'var(--s1)', vals: c.porMes.map(p => p.n) }], fmt: v => Math.round(v).toLocaleString('pt-BR'), rotulos: v => v.toLocaleString('pt-BR'), destaque: ind.mes })}
+    ${colunasHtml({ titulo: 'Tempo até a liberação', sub: 'Média de dias entre a Data Criação e a Data da Checagem (liberação), ' + ind.ano + '.', series: [{ nome: 'Dias (média)', cor: 'var(--s3)', vals: c.porMes.map(p => p.media) }], fmt: v => nf1(v) + ' dias', fmtEixo: v => Math.round(v) + ' d', rotulos: v => nf1(v), destaque: ind.mes, nota: notaNeg })}</div>`;
+  alvo.innerHTML = kpis + roscas + graf;
+}
+
+function pintarIndOrc() {
+  const ano = CFG.ANO, o = indOrcamentos(R, ano);
+  $('#indOrcTit').textContent = 'Orçamentos de ' + ano;
+  const kpis = `<div class="kpis">${[
+    [pct1(o.conv), 'conversão no ano (' + o.tot.ap + ' aprovados de ' + o.tot.dec + ' decididos)'],
+    [brl0(o.tot.va), 'aprovado no ano', '--ok'],
+    [brl0(o.tot.vp), 'perdido no ano (sem aprovação equivalente)', '--lost']
+  ].map(k => `<div class="kpi"><b>${k[0]}</b><span>${k[2] ? `<i style="background:var(${k[2]})"></i>` : ''}${k[1]}</span></div>`).join('')}</div>`;
+  const conv = colunasHtml({ titulo: 'Conversão por mês', sub: 'Aprovados ÷ orçamentos decididos, pelo mês de criação.', series: [{ nome: 'Conversão', cor: 'var(--s1)', vals: o.porMes.map(p => p.conv) }], fmt: v => pct1(v), fmtEixo: v => Math.round(v * 100) + '%', rotulos: v => Math.round(v * 100) + '%',
+    nota: 'Os meses mais recentes ainda têm orçamentos em aberto; a taxa deles muda conforme forem decididos.' });
+  const apxp = colunasHtml({ titulo: 'Aprovado x perdido (R$)', sub: 'Valor orçado, pelo mês de criação. Perdido = não aprovado e sem aprovação equivalente em outra OS ou contrato.', series: [{ nome: 'Aprovado', cor: 'var(--ok)', vals: o.porMes.map(p => p.va) }, { nome: 'Perdido', cor: 'var(--lost)', vals: o.porMes.map(p => p.vp) }], fmt: v => brl0(v), fmtEixo: v => brlK(v) });
+  const doc = c => c.cnpj ? `<span class="cnpj">${String(c.cnpj).replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5')}</span>` : '';
+  const linha = (c, i, cols) => `<tr><td class="num muted">${i + 1}</td><td class="l">${esc(c.nome)}${doc(c)}</td>${cols(c)}</tr>`;
+  const r1 = `<div class="icard"><h3>Clientes que mais aprovam</h3><p class="sub">Os 10 maiores em valor aprovado (todos os orçamentos da relação).</p><div class="tw"><table><thead><tr><th></th><th class="l">Cliente</th><th>Aprovado</th><th>Orç.</th><th>Conversão</th></tr></thead><tbody>${
+    o.topAprov.map((c, i) => linha(c, i, c => `<td class="num">${brl0(c.va)}</td><td class="num">${c.na}/${c.n}</td><td class="num">${pct(c.conv)}</td>`)).join('')}</tbody></table></div></div>`;
+  const r2 = `<div class="icard"><h3>Clientes que pedem e não fecham</h3><p class="sub">Nenhum orçamento aprovado; ordenado pela quantidade de orçamentos.</p><div class="tw"><table><thead><tr><th></th><th class="l">Cliente</th><th>Orç.</th><th>Valor orçado</th><th>Em aberto</th></tr></thead><tbody>${
+    o.semFechar.map((c, i) => linha(c, i, c => `<td class="num">${c.n}</td><td class="num">${brl0(c.v)}</td><td class="num">${c.ng || '–'}</td>`)).join('')}</tbody></table></div></div>`;
+  $('#indOrc').innerHTML = kpis + `<div class="igrid">${conv}${apxp}</div><div class="igrid">${r1}${r2}</div>`;
+}
+
+function pintarIndCon() {
+  const ano = CFG.ANO, k = indContratos(RC, RA, ano, HOJE);
+  $('#indConTit').textContent = 'Contratos em ' + ano;
+  const fat = k.tabela.reduce((s, x) => s + x.fat, 0), gas = k.tabela.reduce((s, x) => s + x.gastos, 0), vis = k.tabela.reduce((s, x) => s + x.comGastos, 0);
+  const kpis = `<div class="kpis">${[
+    [brl0(fat), 'faturado (NFs) em ' + ano],
+    [brl0(gas), 'gastos com visitas de contrato'],
+    [fat ? pct1((fat - gas) / fat) : '–', 'margem (faturado menos gastos)'],
+    [vis ? brl0(gas / vis) : '–', 'gasto médio por visita com gastos lançados']
+  ].map(x => `<div class="kpi"><b>${x[0]}</b><span>${x[1]}</span></div>`).join('')}</div>`;
+  const fxp = colunasHtml({ titulo: 'Faturado x previsto', sub: 'Previsto = parcelas esperadas no mês; faturado = NFs lançadas para o mês de referência.', series: [{ nome: 'Previsto', cor: 'var(--dup)', vals: k.porMes.map(p => p.prev) }, { nome: 'Faturado', cor: 'var(--s1)', vals: k.porMes.map(p => p.fat) }], fmt: v => brl0(v), fmtEixo: v => brlK(v) });
+  const venc = `<div class="icard"><h3>Contratos a vencer</h3><p class="sub">Término nos próximos 90 dias (sem renovação automática).</p>${k.aVencer.length ? `<div class="tw"><table><thead><tr><th class="l">Contrato</th><th class="l">Término</th><th>Faltam</th><th class="l">Situação</th><th>Valor</th></tr></thead><tbody>${
+    k.aVencer.map(x => `<tr><td class="l">${esc(x.nome)}</td><td class="l num">${fmtD(x.fim)}</td><td class="num"><b style="color:${x.dias <= 30 ? 'var(--lost)' : 'var(--fg)'}">${x.dias} dia${x.dias === 1 ? '' : 's'}</b></td><td class="l">${esc(x.situacao)}</td><td class="num">${x.valor != null ? brl0(x.valor) : '–'}</td></tr>`).join('')}</tbody></table></div>` : '<p class="eqinfo">Nenhum contrato termina nos próximos 90 dias.</p>'}${
+    k.vencidos.length ? `<p class="inota">Já vencidos sem renovação registrada: ${k.vencidos.map(x => esc(x.nome) + ' (' + fmtD(x.fim) + ')').join('; ')}.</p>` : ''}<p class="inota">Término só com mês (ex.: 12/2026) conta até o último dia do mês.</p></div>`;
+  const tab = `<div class="icard" style="margin-top:12px"><h3>Gastos e margem por contrato</h3><p class="sub">Faturado em ${ano} menos os gastos das visitas lançados na agenda (sem as canceladas).</p><div class="tw"><table><thead><tr><th class="l">Contrato</th><th>Previsto</th><th>Faturado</th><th>Visitas</th><th>Gastos</th><th>Gasto médio</th><th>Resultado</th><th>Margem</th></tr></thead><tbody>${
+    k.tabela.map(x => `<tr><td class="l">${esc(x.nome)}${x.situacao !== 'Vigente' ? ` <span class="muted" style="font-size:11.5px">${esc(x.situacao)}</span>` : ''}</td><td class="num">${brl0(x.prev)}</td><td class="num">${brl0(x.fat)}</td><td class="num">${x.visitas}</td><td class="num">${x.gastos ? brl0(x.gastos) : '<span class="muted">–</span>'}</td><td class="num">${x.medio != null ? brl0(x.medio) : '<span class="muted">–</span>'}</td><td class="num" style="${x.resultado < 0 ? 'color:var(--lost)' : ''}">${brl0(x.resultado)}</td><td class="num">${pct1(x.margem)}</td></tr>`).join('')}</tbody></table></div>
+    <p class="inota">Gasto médio considera só as visitas com gastos lançados. Contrato sem NF no ano aparece com margem “–”.</p></div>`;
+  $('#indCon').innerHTML = kpis + `<div class="igrid">${fxp}${venc}</div>` + tab;
+}
+$('#iAno').addEventListener('change', e => { ind.ano = +e.target.value; pintarIndCal(); });
+$('#iMes').addEventListener('change', e => { ind.mes = +e.target.value; pintarIndCal(); });
+$('#iTec').addEventListener('change', e => { ind.tec = e.target.value; pintarIndCal(); });
+$('#iCli').addEventListener('input', e => { ind.cli = e.target.value; pintarIndCal(); });
+$('#iLimpar').addEventListener('click', () => { ind.mes = 0; ind.cli = ind.tec = ''; pintarIndCal(); });
 
 /* avisos comuns às páginas que gravam na planilha */
 function avisosPagina(oQue) {
@@ -1331,6 +1580,40 @@ function agTabela() {
     `</tbody><tfoot><tr><th class="l" colspan="6">${ativo ? 'Total das visitas filtradas' : 'Total do mês'} (sem canceladas)</th>${CUSTOS.map(c => `<th class="num">${brl2(soma(c[0]))}</th>`).join('')}<th class="num">${brl2(CUSTOS.reduce((s, c) => s + soma(c[0]), 0))}</th></tr></tfoot>`;
 }
 
+/* ---------- gráficos de rosca dos equipamentos ---------- */
+// categorias conhecidas têm cor fixa (a cor acompanha a categoria, não a posição)
+const ROSCA_CORES = {
+  'Correção': { 'NAO': ['Não', 1], 'SIM': ['Sim', 2] },
+  'Tipo de erro': { 'SEM ERRO': ['Sem erro', 1], 'PADRAO': ['Padrão', 2], 'TECNICO': ['Técnico', 3], 'PADRAO E TECNICO': ['Padrão e Técnico', 4], 'DATA': ['Data', 5] }
+};
+function contarCategorias(campo, valores) {
+  const fixos = ROSCA_CORES[campo] || {}, m = new Map();
+  let livre = Math.max(0, ...Object.values(fixos).map(x => x[1])) + 1;
+  for (const v of valores) {
+    const k = certNorm(v) || '-';
+    if (!m.has(k)) {
+      const f = fixos[k];
+      m.set(k, { rot: k === '-' ? 'Não informado' : f ? f[0] : String(v).trim(), cor: k === '-' ? 'var(--sn)' : f ? `var(--s${f[1]})` : (livre <= 8 ? `var(--s${livre++})` : 'var(--sn)'), n: 0, ordem: f ? f[1] : 50 });
+    }
+    m.get(k).n++;
+  }
+  return [...m.values()].sort((a, b) => b.n - a.n || a.ordem - b.ordem);
+}
+function roscaHtml(titulo, cats) {
+  const tot = cats.reduce((s, c) => s + c.n, 0); if (!tot) return '';
+  const R = 44, L = 2 * Math.PI * R, GAP = cats.length > 1 ? 2 : 0;
+  const pct = n => (n / tot * 100).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + '%';
+  let ac = 0;
+  const segs = cats.map(c => {
+    const len = c.n / tot * L, d = Math.max(len - GAP, 0.5);
+    const s = `<circle class="seg" cx="60" cy="60" r="${R}" fill="none" stroke="${c.cor}" stroke-width="18" stroke-dasharray="${d} ${L - d}" stroke-dashoffset="${-ac}" transform="rotate(-90 60 60)"><title>${esc(c.rot)}: ${pct(c.n)} (${c.n} de ${tot})</title></circle>`;
+    ac += len; return s;
+  }).join('');
+  return `<div class="rosca" role="img" aria-label="${esc(titulo)}: ${cats.map(c => esc(c.rot) + ' ' + pct(c.n)).join(', ')}">
+    <svg width="120" height="120" viewBox="0 0 120 120">${segs}<text x="60" y="58" text-anchor="middle" font-size="20" font-weight="700" fill="var(--fg)">${tot}</text><text x="60" y="74" text-anchor="middle" font-size="10.5" fill="var(--mut)">equip.</text></svg>
+    <div style="min-width:0;flex:1"><h4>${esc(titulo)}</h4><ul>${cats.map(c => `<li><i style="background:${c.cor}"></i><span>${esc(c.rot)}</span><b>${pct(c.n)}</b><span class="n">${c.n}</span></li>`).join('')}</ul></div></div>`;
+}
+
 /* ---------- equipamentos da visita (aba Controle de Certificados) ---------- */
 async function carregarCert() {
   if (CERT) return;
@@ -1345,6 +1628,7 @@ async function carregarCert() {
     CERT = { estado: 'erro', erro: (err instanceof TypeError) ? 'Não consegui ler a aba “Controle de Certificados”. Clique na linha de novo para tentar outra vez.' : err.message };
   }
   if (location.hash === '#agenda') agTabela();
+  if (location.hash === '#indicadores') pintarIndCal();
 }
 
 function equipamentosHtml(e) {
